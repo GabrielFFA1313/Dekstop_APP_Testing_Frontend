@@ -14,15 +14,23 @@ class Ui_MainWindow(BaseUi):
         # Store reference to MainWindow for navigation
         self.main_window = MainWindow
         
+        # Initialize event manager reference
+        self.event_manager = None
+        
         # Now add the specific content for this page - the Activities Table
         self.setup_activities_section()
         
-        # Load mock data for demonstration
-        # self.load_mock_activities_data()
+        # Setup filter section AFTER BaseUi is complete
+        self.setup_filter_section()
         
         # Connect UI elements and set translations
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def set_event_manager(self, event_manager):
+        """Set the event manager reference"""
+        self.event_manager = event_manager
+        print("Event manager set in activities UI")
 
     def setup_activities_section(self):
         """Setup the right sidebar with Activities Table"""
@@ -48,6 +56,65 @@ class Ui_MainWindow(BaseUi):
         
         # Add the activities section to the content layout
         self.contentLayout.addWidget(self.rightSidebar)
+
+    def setup_filter_section(self):
+        """Setup filter section for activity types - using existing BaseUi upcoming events"""
+        # Update the existing comboUpcomingFilter from base UI (same as calendar)
+        if hasattr(self, 'comboUpcomingFilter'):
+            self.comboUpcomingFilter.clear()
+            self.comboUpcomingFilter.addItems([
+                "All Events",
+                "Academic Activities", 
+                "Organizational Activities",
+                "Deadlines",
+                "Holidays"
+            ])
+            self.comboUpcomingFilter.setCurrentText("All Events")
+
+    def populate_upcoming_events(self, events_data=None):
+        """Populate the upcoming events list using existing BaseUi component"""
+        if not hasattr(self, 'listUpcoming'):
+            return
+            
+        if events_data is None and hasattr(self, 'event_manager') and self.event_manager:
+            # Get upcoming events from event manager
+            upcoming_events = self.event_manager.get_upcoming_events(limit=20)
+            events_data = []
+            
+            for date, title, category in upcoming_events:
+                # Choose icon based on category
+                icon_map = {
+                    "Academic": "🟢",
+                    "Organizational": "🔵", 
+                    "Deadline": "🟠",
+                    "Holiday": "🔴"
+                }
+                icon = icon_map.get(category, "⚪")
+                
+                # Format date
+                formatted_date = date.toString("MMM dd, yyyy")
+                
+                events_data.append({
+                    "type": category, 
+                    "title": title, 
+                    "date": formatted_date, 
+                    "icon": icon
+                })
+        
+        # Fallback to sample data if no event manager
+        if events_data is None:
+            events_data = [
+                {"type": "Academic", "title": "Midterm Exams", "date": "Sept 15-20, 2025", "icon": "🟢"},
+                {"type": "Organizational", "title": "Student Council Meeting", "date": "Sept 10, 2025", "icon": "🔵"},
+                {"type": "Deadline", "title": "Project Submission", "date": "Sept 12, 2025", "icon": "🟠"},
+                {"type": "Holiday", "title": "Independence Day", "date": "Sept 21, 2025", "icon": "🔴"},
+            ]
+        
+        self.listUpcoming.clear()
+        for event in events_data:
+            item_text = f"{event['icon']} {event['title']}\n    {event['date']}"
+            item = QtWidgets.QListWidgetItem(item_text)
+            self.listUpcoming.addItem(item)
 
     def setup_top_controls(self):
         """Setup the top control section with filters and back button"""
@@ -108,7 +175,6 @@ class Ui_MainWindow(BaseUi):
             "Deadline",
             "Holiday"
         ])
-        # self.comboActivityType.currentTextChanged.connect(self.filter_activities)
         self.filtersLayout.addWidget(self.comboActivityType)
         
         # Add stretch to push back button to the right
@@ -140,7 +206,6 @@ class Ui_MainWindow(BaseUi):
                 border: 2px solid #084924;
             }
         """)
-        # self.btnback.clicked.connect(self.go_back_to_calendar)
         self.topControlsLayout.addWidget(self.btnback)
         
         # Add top controls to main layout
@@ -242,159 +307,6 @@ class Ui_MainWindow(BaseUi):
         self.activitiesTable.setSortingEnabled(True)
         
         self.rightLayout.addWidget(self.activitiesTable)
-# FIX this might have to be deleted 
-    # def load_mock_activities_data(self):
-    #     """Load mock activities data for demonstration"""
-    #     # Mock data for demonstration
-    #     mock_activities = [
-    #         {
-    #             'date': QDate.currentDate().addDays(1),
-    #             'title': 'Programming Fundamentals Quiz',
-    #             'category': 'Academic',
-    #             'location': 'Room 101',
-    #             'status': 'Confirmed',
-    #             'time': '09:00 AM'
-    #         },
-    #         {
-    #             'date': QDate.currentDate().addDays(3),
-    #             'title': 'CISC Organization Meeting',
-    #             'category': 'Organizational',
-    #             'location': 'Conference Room A',
-    #             'status': 'Pending',
-    #             'time': '02:00 PM'
-    #         },
-    #         {
-    #             'date': QDate.currentDate().addDays(5),
-    #             'title': 'Final Project Submission',
-    #             'category': 'Deadline',
-    #             'location': 'Online Portal',
-    #             'status': 'Active',
-    #             'time': '11:59 PM'
-    #         },
-    #         {
-    #             'date': QDate.currentDate().addDays(7),
-    #             'title': 'Database Systems Exam',
-    #             'category': 'Academic',
-    #             'location': 'Auditorium',
-    #             'status': 'Confirmed',
-    #             'time': '10:00 AM'
-    #         },
-    #         {
-    #             'date': QDate.currentDate().addDays(10),
-    #             'title': 'New Year Holiday',
-    #             'category': 'Holiday',
-    #             'location': 'Campus-wide',
-    #             'status': 'Confirmed',
-    #             'time': 'All Day'
-    #         },
-    #         {
-    #             'date': QDate.currentDate().addDays(15),
-    #             'title': 'Research Paper Review',
-    #             'category': 'Deadline',
-    #             'location': 'Online Submission',
-    #             'status': 'Active',
-    #             'time': '05:00 PM'
-    #         }
-    #     ]
-        
-    #     # Store mock data
-    #     self.all_activities = mock_activities
-        
-    #     # Populate the table
-    #     self.populate_table(mock_activities)
-# FIX this might have to be deleted 
-    # def populate_table(self, activities_list):
-    #     """Populate the activities table with event data"""
-    #     # Disable sorting temporarily to avoid issues during population
-    #     self.activitiesTable.setSortingEnabled(False)
-        
-    #     # Set the number of rows
-    #     self.activitiesTable.setRowCount(len(activities_list))
-        
-    #     for row, activity in enumerate(activities_list):
-    #         # Date & Time
-    #         date_time = f"{activity['date'].toString('MMM dd, yyyy')}\n{activity['time']}"
-    #         date_item = QTableWidgetItem(date_time)
-    #         date_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-    #         self.activitiesTable.setItem(row, 0, date_item)
-            
-    #         # Event
-    #         event_item = QTableWidgetItem(activity['title'])
-    #         event_item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-    #         self.activitiesTable.setItem(row, 1, event_item)
-            
-    #         # Type
-    #         type_item = QTableWidgetItem(activity['category'])
-    #         type_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-    #         # Color code the type based on category
-    #         type_item.setBackground(self.get_category_color(activity['category']))
-    #         self.activitiesTable.setItem(row, 2, type_item)
-            
-    #         # Location
-    #         location_item = QTableWidgetItem(activity['location'])
-    #         location_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-    #         self.activitiesTable.setItem(row, 3, location_item)
-            
-    #         # Status
-    #         status_item = QTableWidgetItem(activity['status'])
-    #         status_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-    #         status_item.setBackground(self.get_status_color(activity['status']))
-    #         self.activitiesTable.setItem(row, 4, status_item)
-            
-    #         # Action - Add a simple button or text
-    #         action_item = QTableWidgetItem("📋 Details")
-    #         action_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-    #         action_item.setBackground(QtGui.QColor(240, 240, 240))
-    #         action_item.setForeground(QtGui.QColor(8, 73, 36))
-    #         self.activitiesTable.setItem(row, 5, action_item)
-        
-        # Re-enable sorting
-        self.activitiesTable.setSortingEnabled(True)
-        
-        # Sort by date by default (column 0)
-        self.activitiesTable.sortItems(0, Qt.SortOrder.AscendingOrder)
-
-    # def get_category_color(self, category):
-    #     """Get background color for event category"""
-    #     colors = {
-    #         'Academic': QtGui.QColor(200, 255, 200, 150),      # Light green
-    #         'Organizational': QtGui.QColor(200, 200, 255, 150), # Light blue
-    #         'Deadline': QtGui.QColor(255, 220, 200, 150),      # Light orange
-    #         'Holiday': QtGui.QColor(255, 200, 200, 150)        # Light red
-    #     }
-    #     return colors.get(category, QtGui.QColor(240, 240, 240, 150))
-
-    # def get_status_color(self, status):
-    #     """Get background color for event status"""
-    #     colors = {
-    #         'Confirmed': QtGui.QColor(200, 255, 200, 150),     # Light green
-    #         'Pending': QtGui.QColor(255, 255, 200, 150),       # Light yellow
-    #         'Active': QtGui.QColor(200, 220, 255, 150),        # Light blue
-    #         'Cancelled': QtGui.QColor(255, 200, 200, 150)      # Light red
-    #     }
-    #     return colors.get(status, QtGui.QColor(240, 240, 240, 150))
-
-    # def filter_activities(self, filter_type):
-    #     """Filter activities based on selected type"""
-    #     if not hasattr(self, 'all_activities'):
-    #         return
-            
-    #     if filter_type == "All Events":
-    #         filtered_activities = self.all_activities
-    #     else:
-    #         filtered_activities = [
-    #             activity for activity in self.all_activities 
-    #             if activity['category'] == filter_type
-    #         ]
-        
-    #     # Repopulate table with filtered data
-    #     self.populate_table(filtered_activities)
-
-    # def go_back_to_calendar(self):
-    #     """Navigate back to calendar view"""
-    #     # This will be connected to the main application's navigation method
-    #     # The connection is made in the main application
-    #     pass
 
     def retranslateUi(self, MainWindow):
         """Set text for UI elements"""
