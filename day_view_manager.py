@@ -58,6 +58,14 @@ class DayViewManager:
     def setup_day_view_connections(self):
         """Setup day view specific connections"""
         try:
+            # Connect view dropdown to switch back to calendar
+            if hasattr(self.day_view_ui, 'comboView'):
+                try:
+                    self.day_view_ui.comboView.currentTextChanged.disconnect()
+                except:
+                    pass
+                self.day_view_ui.comboView.currentTextChanged.connect(self.handle_view_change)
+                
             # Connect day view navigation buttons
             if hasattr(self.day_view_ui, 'btnPrevDay'):
                 try:
@@ -306,18 +314,13 @@ class DayViewManager:
     def handle_view_change(self, view_type):
         """Handle switching between Day and Month views"""
         try:
-            print(f"Day View: handle_view_change called with view_type: {view_type}")  # Debug line
             if view_type == "Month":
-                print("Day View: Switching to calendar view...")  # Debug line
                 # Switch back to calendar view
                 if hasattr(self.main_app, 'show_calendar_view'):
                     self.main_app.show_calendar_view()
-                    print("Day View: Successfully called show_calendar_view()")  # Debug line
                 elif hasattr(self.main_app, 'setup_calendar_view'):
                     self.main_app.setup_calendar_view()
-                    print("Day View: Successfully called setup_calendar_view()")  # Debug line
                 else:
-                    print("Day View: No calendar view method found!")  # Debug line
                     QMessageBox.information(self.main_app, "Navigation", "Returning to Calendar View")
         except Exception as e:
             import traceback
