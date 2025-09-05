@@ -1,4 +1,4 @@
-# ACTIVITIES_MANAGER.PY - Handles all activities view functionality
+# ACTIVITIES_MANAGER.PY - Handles all activities view functionality (UPDATED)
 from PyQt6.QtWidgets import QMessageBox
 from PyQt6.QtCore import QDate, QTimer, Qt
 from PyQt6 import QtWidgets, QtGui, QtCore
@@ -65,6 +65,14 @@ class ActivitiesManager:
                 except:
                     pass
                 self.activities_ui.btnback.clicked.connect(self.go_back_to_calendar)
+            
+            # Connect Add Event button - UPDATED TO USE SAME WINDOW
+            if hasattr(self.activities_ui, 'btnAddEvent'):
+                try:
+                    self.activities_ui.btnAddEvent.clicked.disconnect()
+                except:
+                    pass
+                self.activities_ui.btnAddEvent.clicked.connect(self.show_add_event)
             
             # Connect activities table filter
             if hasattr(self.activities_ui, 'comboActivityType'):
@@ -338,6 +346,25 @@ class ActivitiesManager:
         except Exception as e:
             import traceback
             traceback.print_exc()
+
+    def show_add_event(self):
+        """Show the add event interface in the same window - UPDATED METHOD"""
+        try:
+            # Use the main app's show_add_event_view method to navigate in same window
+            if hasattr(self.main_app, 'show_add_event_view'):
+                self.main_app.show_add_event_view()
+            else:
+                # Fallback message if the method doesn't exist
+                QMessageBox.information(
+                    self.main_app, 
+                    "Add Event", 
+                    "Add Event functionality requires the show_add_event_view method in the main application.\n\nPlease ensure the main application has been updated with the add event manager."
+                )
+                
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(self.main_app, "Error", f"Could not show add event interface: {str(e)}")
 
     def go_back_to_calendar(self):
         """Return to calendar from activities"""

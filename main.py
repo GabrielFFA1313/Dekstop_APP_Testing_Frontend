@@ -1,4 +1,4 @@
-# MAIN.PY - Calendar focused main application
+# MAIN.PY - Calendar focused main application (UPDATED with Add Event Manager)
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QMessageBox
 from PyQt6.QtCore import QDate, QTimer, Qt
@@ -11,6 +11,7 @@ from event_manager import EventManager
 # Import view managers
 from activities_manager import ActivitiesManager
 from day_view_manager import DayViewManager
+from add_event_manager import AddEventManager  # ADDED: Import add event manager
 
 
 class MainApplication(QMainWindow):
@@ -28,6 +29,7 @@ class MainApplication(QMainWindow):
         # Initialize view managers
         self.activities_manager = ActivitiesManager(self, self.event_manager)
         self.day_view_manager = DayViewManager(self, self.event_manager)
+        self.add_event_manager = AddEventManager(self, self.event_manager)  # ADDED: Initialize add event manager
         
         # Initialize calendar UI
         self.calendar_ui = None
@@ -96,6 +98,14 @@ class MainApplication(QMainWindow):
                     pass
                 self.calendar_ui.btnviewEvent.clicked.connect(self.show_activities_view)
             
+            # ADDED: Connect add event button - if your calendar has an add event button
+            if hasattr(self.calendar_ui, 'btnaddEvent'):
+                try:
+                    self.calendar_ui.btnaddEvent.clicked.disconnect()
+                except:
+                    pass
+                self.calendar_ui.btnaddEvent.clicked.connect(self.show_add_event_view)
+            
             # Connect calendar date selection
             if hasattr(self.calendar_ui, 'calendarWidget'):
                 try:
@@ -147,6 +157,16 @@ class MainApplication(QMainWindow):
             self.calendar_ui = None  # Clear calendar reference
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Could not switch to activities view: {str(e)}")
+
+    def show_add_event_view(self):
+        """Switch to add event view using add event manager - ADDED NEW METHOD"""
+        try:
+            self.add_event_manager.setup_add_event_view()
+            self.current_view = "add_event"
+            self.calendar_ui = None  # Clear calendar reference
+            self.setWindowTitle("Campus Event Manager - Add Event")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Could not switch to add event view: {str(e)}")
 
     def show_calendar_view(self):
         """Switch back to calendar view"""
@@ -244,6 +264,9 @@ class MainApplication(QMainWindow):
             self.day_view_manager.refresh_day_view()
         elif self.current_view == "activities":
             self.activities_manager.refresh_activities()
+        elif self.current_view == "add_event":  # ADDED: Handle add event view
+            # No refresh needed for add event view
+            pass
 
     def refresh_events_display(self):
         """Refresh events display - called by EventManager"""

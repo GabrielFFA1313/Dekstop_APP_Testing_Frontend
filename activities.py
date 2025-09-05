@@ -117,7 +117,7 @@ class Ui_MainWindow(BaseUi):
             self.listUpcoming.addItem(item)
 
     def setup_top_controls(self):
-        """Setup the top control section with filters and back button"""
+        """Setup the top control section with filters and buttons"""
         # Create horizontal layout for top controls
         self.topControlsWidget = QtWidgets.QWidget()
         self.topControlsLayout = QtWidgets.QHBoxLayout(self.topControlsWidget)
@@ -177,12 +177,37 @@ class Ui_MainWindow(BaseUi):
         ])
         self.filtersLayout.addWidget(self.comboActivityType)
         
-        # Add stretch to push back button to the right
+        # Add stretch to push buttons to the right
         self.filtersLayout.addStretch()
         
         # Add filters to top controls
         self.topControlsLayout.addWidget(self.filtersWidget)
         self.topControlsLayout.addStretch()
+        
+        # Add Event button - positioned before back button
+        self.btnAddEvent = QtWidgets.QPushButton("+ Add Event")
+        self.btnAddEvent.setStyleSheet("""
+            QPushButton {
+                background-color: #084924;
+                color: white;
+                border: 1px solid #FDC601 ;
+                border-radius: 6px;
+                padding: 10px 20px;
+                font-weight: bold;
+                font-size: 12px;
+                min-width: 120px;
+                margin-right: 10px;
+            }
+            QPushButton:hover {
+                background-color: #0a5228;
+                border: 2px solid #FDC601;
+            }
+            QPushButton:pressed {
+                background-color: #063018;
+                border: 2px solid #FDC601;
+            }
+        """)
+        self.topControlsLayout.addWidget(self.btnAddEvent)
         
         # Back button - positioned on the right
         self.btnback = QtWidgets.QPushButton("← Back to Calendar")
