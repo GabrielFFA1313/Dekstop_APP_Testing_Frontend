@@ -1,4 +1,4 @@
-# DAY_VIEW.PY
+# DAY_VIEW.PY THIS IS A UI FILE
 from PyQt6 import QtCore, QtGui, QtWidgets
 from base_ui import BaseUi
 from datetime import datetime, timedelta
@@ -41,6 +41,47 @@ class DayViewUi(BaseUi):
 
     def setup_day_view_header(self):
         """Setup the header with date navigation and view controls"""
+        # View selector at the top
+        self.viewControlLayout = QtWidgets.QHBoxLayout()
+        self.viewControlLayout.setSpacing(10)
+        
+        # View dropdown label and combo
+        self.labelView = QtWidgets.QLabel("View:")
+        self.labelView.setStyleSheet("font-weight: bold; color: #084924; font-size: 14px;")
+        
+        self.comboView = QtWidgets.QComboBox()
+        self.comboView.setMinimumWidth(100)
+        self.comboView.addItems(["Day", "Month"])  # Day is selected by default
+        self.comboView.setCurrentText("Day")
+        self.comboView.setStyleSheet("""
+            QComboBox {
+                padding: 8px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                background-color: white;
+                font-size: 12px;
+            }
+            QComboBox:hover {
+                border-color: #FDC601;
+            }
+            QComboBox::drop-down {
+                border: none;
+                width: 20px;
+            }
+            QComboBox::down-arrow {
+                image: none;
+                border-left: 5px solid transparent;
+                border-right: 5px solid transparent;
+                border-top: 5px solid #666;
+            }
+        """)
+        
+        self.viewControlLayout.addWidget(self.labelView)
+        self.viewControlLayout.addWidget(self.comboView)
+        self.viewControlLayout.addStretch()  # Push to left side
+        
+        self.dayViewLayout.addLayout(self.viewControlLayout)
+        
         # Day View Title
         self.dayViewTitle = QtWidgets.QLabel("Daily Schedule")
         self.dayViewTitle.setStyleSheet("""
@@ -50,29 +91,6 @@ class DayViewUi(BaseUi):
             margin-bottom: 10px;
         """)
         self.dayViewLayout.addWidget(self.dayViewTitle)
-        
-        # Header layout
-        self.dayHeaderLayout = QtWidgets.QHBoxLayout()
-        
-        # Date navigation
-        self.dateNavLayout = QtWidgets.QVBoxLayout()
-        
-        # Previous day button
-        self.btnPrevDay = QtWidgets.QPushButton("◀ Previous")
-        self.btnPrevDay.setStyleSheet("""
-            QPushButton {
-                background-color: #084924;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                padding: 6px 12px;
-                font-size: 11px;
-                margin-bottom: 5px;
-            }
-            QPushButton:hover {
-                background-color: #FDC601;
-            }
-        """)
         
         # Current date label
         current_date = datetime.now()
@@ -89,6 +107,27 @@ class DayViewUi(BaseUi):
             background-color: #fffef7;
         """)
         self.labelCurrentDate.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.dayViewLayout.addWidget(self.labelCurrentDate)
+        
+        # Navigation buttons layout (horizontal)
+        self.navButtonsLayout = QtWidgets.QHBoxLayout()
+        self.navButtonsLayout.setSpacing(10)
+        
+        # Previous day button
+        self.btnPrevDay = QtWidgets.QPushButton("◀ Previous")
+        self.btnPrevDay.setStyleSheet("""
+            QPushButton {
+                background-color: #084924;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+            QPushButton:hover {
+                background-color: #FDC601;
+            }
+        """)
         
         # Next day button
         self.btnNextDay = QtWidgets.QPushButton("Next ▶")
@@ -100,14 +139,18 @@ class DayViewUi(BaseUi):
                 border-radius: 4px;
                 padding: 6px 12px;
                 font-size: 11px;
-                margin-top: 5px;
             }
             QPushButton:hover {
                 background-color: #FDC601;
             }
         """)
         
-        # Today button
+        self.navButtonsLayout.addWidget(self.btnPrevDay)
+        self.navButtonsLayout.addWidget(self.btnNextDay)
+        
+        self.dayViewLayout.addLayout(self.navButtonsLayout)
+        
+        # Today button (separate row)
         self.btnToday = QtWidgets.QPushButton("Today")
         self.btnToday.setStyleSheet("""
             QPushButton {
@@ -118,20 +161,14 @@ class DayViewUi(BaseUi):
                 padding: 6px 12px;
                 font-weight: bold;
                 font-size: 11px;
-                margin-top: 10px;
+                margin-top: 5px;
             }
             QPushButton:hover {
                 background-color: #084924;
             }
         """)
         
-        self.dateNavLayout.addWidget(self.btnPrevDay)
-        self.dateNavLayout.addWidget(self.labelCurrentDate)
-        self.dateNavLayout.addWidget(self.btnNextDay)
-        self.dateNavLayout.addWidget(self.btnToday)
-        
-        self.dayHeaderLayout.addLayout(self.dateNavLayout)
-        self.dayViewLayout.addLayout(self.dayHeaderLayout)
+        self.dayViewLayout.addWidget(self.btnToday)
 
     def setup_day_view_calendar(self):
         """Setup the day view calendar with time slots"""

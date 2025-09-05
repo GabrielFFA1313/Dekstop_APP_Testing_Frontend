@@ -49,13 +49,13 @@ class CalendarUi(BaseUi):
         self.calendarControlsLayout = QtWidgets.QHBoxLayout()
         self.calendarControlsLayout.setSpacing(15)
         
-        # View selector
+        # View selector (moved to left side)
         self.labelView = QtWidgets.QLabel("View:")
         self.labelView.setStyleSheet("font-weight: bold; color: #084924; font-size: 14px;")
         
         self.comboView = QtWidgets.QComboBox()
         self.comboView.setMinimumWidth(100)
-        self.comboView.addItems(["Month", "Week", "Day"])
+        self.comboView.addItems(["Month", "Day"])
         self.comboView.setStyleSheet("""
             QComboBox {
                 padding: 8px;
@@ -79,22 +79,10 @@ class CalendarUi(BaseUi):
             }
         """)
         
-        # Month selector  
-        self.labelMonth = QtWidgets.QLabel("Month:")
-        self.labelMonth.setStyleSheet("font-weight: bold; color: #084924; font-size: 14px;")
-        
-        self.comboMonth = QtWidgets.QComboBox()
-        self.comboMonth.setMinimumWidth(120)
-        self.comboMonth.addItems([
-            "January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"
-        ])
-        self.comboMonth.setStyleSheet(self.comboView.styleSheet())
-        
         self.calendarControlsLayout.addWidget(self.labelView)
         self.calendarControlsLayout.addWidget(self.comboView)
-        self.calendarControlsLayout.addWidget(self.labelMonth)
-        self.calendarControlsLayout.addWidget(self.comboMonth)
+        
+        # Add stretch to push buttons to the right
         self.calendarControlsLayout.addStretch()
         
         self.calendarLayout.addLayout(self.calendarControlsLayout)
@@ -158,8 +146,6 @@ class CalendarUi(BaseUi):
 
     def setup_action_buttons(self):
         """Setup action buttons for calendar operations"""
-        self.buttonLayout = QtWidgets.QHBoxLayout()
-        self.buttonLayout.setSpacing(10)
         
         button_style = """
             QPushButton {
@@ -188,24 +174,19 @@ class CalendarUi(BaseUi):
         # View Event button (available to all roles)
         self.btnviewEvent = QtWidgets.QPushButton("View Event")
         self.btnviewEvent.setStyleSheet(button_style)
-        self.buttonLayout.addWidget(self.btnviewEvent)
+        self.calendarControlsLayout.addWidget(self.btnviewEvent)
+        # ugly might delete later
+        # self.btnaddEvent = QtWidgets.QPushButton("Add Event")
+        # self.btnaddEvent.setStyleSheet(button_style)
+        # self.buttonLayout.addWidget(self.btnaddEvent)
         
-        self.btnaddEvent = QtWidgets.QPushButton("Add Event")
-        self.btnaddEvent.setStyleSheet(button_style)
-        self.buttonLayout.addWidget(self.btnaddEvent)
+        # self.btneditEvent = QtWidgets.QPushButton("Edit Event")
+        # self.btneditEvent.setStyleSheet(button_style)
+        # self.buttonLayout.addWidget(self.btneditEvent)
         
-        self.btneditEvent = QtWidgets.QPushButton("Edit Event")
-        self.btneditEvent.setStyleSheet(button_style)
-        self.buttonLayout.addWidget(self.btneditEvent)
-        
-        self.btndeleteEvent = QtWidgets.QPushButton("Delete Event")
-        self.btndeleteEvent.setStyleSheet(button_style)
-        self.buttonLayout.addWidget(self.btndeleteEvent)
-        
-        self.buttonLayout.addStretch()
-        
-        # Add the button layout to the main calendar layout
-        self.calendarLayout.addLayout(self.buttonLayout)
+        # self.btndeleteEvent = QtWidgets.QPushButton("Delete Event")
+        # self.btndeleteEvent.setStyleSheet(button_style)
+        # self.buttonLayout.addWidget(self.btndeleteEvent)
 
         # Apply role-based button visibility
         self.apply_role_based_visibility()
@@ -222,14 +203,14 @@ class CalendarUi(BaseUi):
             "Holidays"
         ])
         self.comboUpcomingFilter.setCurrentText("All Events")
-
+# Ugly might delete later
     def apply_role_based_visibility(self):
         if self.user_role == "admin":
             # Admin can see all buttons
             self.btnviewEvent.setVisible(True)
-            self.btnaddEvent.setVisible(True)
-            self.btneditEvent.setVisible(True)
-            self.btndeleteEvent.setVisible(True)
+            # self.btnaddEvent.setVisible(True)
+            # self.btneditEvent.setVisible(True)
+            # self.btndeleteEvent.setVisible(True)
             
     
     def highlight_current_page(self):
