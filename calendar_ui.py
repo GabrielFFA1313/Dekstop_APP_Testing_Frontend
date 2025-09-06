@@ -175,6 +175,29 @@ class CalendarUi(BaseUi):
         self.btnviewEvent = QtWidgets.QPushButton("View Event")
         self.btnviewEvent.setStyleSheet(button_style)
         self.calendarControlsLayout.addWidget(self.btnviewEvent)
+        
+        # Search Bar beside View Event button
+        self.searchBarCalendar = QtWidgets.QLineEdit()
+        self.searchBarCalendar.setFixedWidth(200)
+        self.searchBarCalendar.setPlaceholderText("Search events...")
+        self.searchBarCalendar.setStyleSheet("""
+            QLineEdit {
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                padding: 8px 12px;
+                background-color: white;
+                font-size: 12px;
+            }
+            QLineEdit:focus {
+                border-color: #FDC601;
+                outline: none;
+            }
+            QLineEdit::placeholder {
+                color: #999;
+            }
+        """)
+        self.calendarControlsLayout.addWidget(self.searchBarCalendar)
+        
         # ugly might delete later
         # self.btnaddEvent = QtWidgets.QPushButton("Add Event")
         # self.btnaddEvent.setStyleSheet(button_style)

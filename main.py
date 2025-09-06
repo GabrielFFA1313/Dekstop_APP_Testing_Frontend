@@ -1,4 +1,4 @@
-# MAIN.PY - Calendar focused main application (UPDATED with Add Event Manager)
+# MAIN.PY - Calendar focused main application (UPDATED with Search Integration)
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QMessageBox
 from PyQt6.QtCore import QDate, QTimer, Qt
@@ -6,16 +6,17 @@ from PyQt6 import QtWidgets, QtGui, QtCore
 
 # Import UI modules
 from calendar_ui import CalendarUi
+from search import SearchUi  # ADDED: Import search UI
 from event_manager import EventManager
 
 # Import view managers
 from activities_manager import ActivitiesManager
 from day_view_manager import DayViewManager
-from add_event_manager import AddEventManager  # ADDED: Import add event manager
+from add_event_manager import AddEventManager
 
 
 class MainApplication(QMainWindow):
-    """Main application focused on Calendar UI with view managers"""
+    """Main application focused on Calendar UI with view managers and search functionality"""
     
     def __init__(self, user_role="admin"):
         super().__init__()
@@ -29,10 +30,11 @@ class MainApplication(QMainWindow):
         # Initialize view managers
         self.activities_manager = ActivitiesManager(self, self.event_manager)
         self.day_view_manager = DayViewManager(self, self.event_manager)
-        self.add_event_manager = AddEventManager(self, self.event_manager)  # ADDED: Initialize add event manager
+        self.add_event_manager = AddEventManager(self, self.event_manager)
         
-        # Initialize calendar UI
+        # Initialize UI references
         self.calendar_ui = None
+        self.search_ui = None  # ADDED: Search UI reference
         
         # Setup Calendar UI (default view)
         self.setup_calendar_view()
@@ -61,6 +63,7 @@ class MainApplication(QMainWindow):
             QTimer.singleShot(100, self.populate_upcoming_events)
             
             self.current_view = "calendar"
+            self.search_ui = None  # Clear search reference
             self.setWindowTitle("Campus Event Manager - Calendar")
             
         except Exception as e:
@@ -98,6 +101,22 @@ class MainApplication(QMainWindow):
                     pass
                 self.calendar_ui.btnviewEvent.clicked.connect(self.show_activities_view)
             
+            # ADDED: Connect calendar search bar to search functionality
+            if hasattr(self.calendar_ui, 'searchBarCalendar'):
+                try:
+                    self.calendar_ui.searchBarCalendar.returnPressed.disconnect()
+                except:
+                    pass
+                self.calendar_ui.searchBarCalendar.returnPressed.connect(self.perform_search)
+            
+            # ADDED: Connect top search bar to search functionality
+            if hasattr(self.calendar_ui, 'searchBarTop'):
+                try:
+                    self.calendar_ui.searchBarTop.returnPressed.disconnect()
+                except:
+                    pass
+                self.calendar_ui.searchBarTop.returnPressed.connect(self.perform_search)
+            
             # ADDED: Connect add event button - if your calendar has an add event button
             if hasattr(self.calendar_ui, 'btnaddEvent'):
                 try:
@@ -113,6 +132,279 @@ class MainApplication(QMainWindow):
                 except:
                     pass
                 self.calendar_ui.calendarWidget.selectionChanged.connect(self.on_calendar_date_changed)
+            
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+
+    def perform_search(self):
+        """ADDED: Perform search based on search bar input"""
+        try:
+            search_query = ""
+            
+            # Get search query from the appropriate search bar
+            if self.current_view == "calendar" and self.calendar_ui:
+                if hasattr(self.calendar_ui, 'searchBarCalendar') and self.calendar_ui.searchBarCalendar.text():
+                    search_query = self.calendar_ui.searchBarCalendar.text().strip()
+                elif hasattr(self.calendar_ui, 'searchBarTop') and self.calendar_ui.searchBarTop.text():
+                    search_query = self.calendar_ui.searchBarTop.text().strip()
+            
+            if search_query:
+                self.show_search_view(search_query)
+            else:
+                QMessageBox.information(self, "Search", "Please enter a search term.")
+                
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(self, "Error", f"Search failed: {str(e)}")
+
+    def show_search_view(self, search_query=""):
+        """ADDED: Switch to search view and perform search"""
+        try:
+            # Store current geometry
+            geometry = self.geometry()
+            
+            # Clear any existing central widget
+            self.setCentralWidget(None)
+            
+            # Create and setup Search UI
+            self.search_ui = SearchUi()
+            self.search_ui.setupSearchUi(self, self.user_role)
+            
+            # Setup search connections
+            self.setup_search_connections()
+            
+            # FIXED: Populate upcoming events in search view
+            self.populate_upcoming_events_search()
+            
+            # Perform search if query provided
+            if search_query:
+                self.execute_search(search_query)
+            
+            # Restore geometry
+            if geometry:
+                self.setGeometry(geometry)
+            
+            self.current_view = "search"
+            self.calendar_ui = None  # Clear calendar reference
+            self.setWindowTitle("Campus Event Manager - Search Results")
+            
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(self, "Error", f"Could not switch to search view: {str(e)}")
+
+    def setup_search_connections(self):
+        """ADDED: Setup search-specific connections"""
+        try:
+            if not self.search_ui:
+                return
+            
+            # FIXED: Connect back button to return to calendar
+            if hasattr(self.search_ui, 'btnBack'):
+                try:
+                    self.search_ui.btnBack.clicked.disconnect()
+                except:
+                    pass
+                self.search_ui.btnBack.clicked.connect(self.show_calendar_view)
+            
+            # Connect search button
+            if hasattr(self.search_ui, 'btnSearch'):
+                try:
+                    self.search_ui.btnSearch.clicked.disconnect()
+                except:
+                    pass
+                self.search_ui.btnSearch.clicked.connect(self.execute_search_from_ui)
+            
+            # Connect search bar in search results panel
+            if hasattr(self.search_ui, 'searchBarResults'):
+                try:
+                    self.search_ui.searchBarResults.returnPressed.disconnect()
+                except:
+                    pass
+                self.search_ui.searchBarResults.returnPressed.connect(self.execute_search_from_ui)
+            
+            # Connect top search bar
+            if hasattr(self.search_ui, 'searchBarTop'):
+                try:
+                    self.search_ui.searchBarTop.returnPressed.disconnect()
+                except:
+                    pass
+                self.search_ui.searchBarTop.returnPressed.connect(self.execute_search_from_top_bar)
+            
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+
+    def populate_upcoming_events_search(self):
+        """FIXED: Populate upcoming events in search view"""
+        try:
+            if not self.search_ui:
+                return
+            
+            # Clear sample search results first
+            if hasattr(self.search_ui, 'searchResultsContentLayout'):
+                # Clear all existing result widgets
+                for i in reversed(range(self.search_ui.searchResultsContentLayout.count())):
+                    child = self.search_ui.searchResultsContentLayout.itemAt(i).widget()
+                    if child:
+                        child.setParent(None)
+            
+            # Get upcoming events from event manager
+            upcoming_events = self.event_manager.get_upcoming_events(limit=10)  # Limit to 10 events
+            
+            if upcoming_events:
+                for date, title, category in upcoming_events:
+                    self.add_search_result_to_ui(date, title, category)
+                
+                # Update search results title
+                if hasattr(self.search_ui, 'labelSearchResults'):
+                    self.search_ui.labelSearchResults.setText(f"Upcoming Events ({len(upcoming_events)} found)")
+            else:
+                # No upcoming events
+                if hasattr(self.search_ui, 'labelSearchResults'):
+                    self.search_ui.labelSearchResults.setText("Upcoming Events (0 found)")
+                
+                # Add "no events" message
+                no_events_widget = QtWidgets.QLabel("No upcoming events found.")
+                no_events_widget.setStyleSheet("""
+                    QLabel {
+                        color: #666;
+                        font-style: italic;
+                        padding: 20px;
+                        text-align: center;
+                    }
+                """)
+                no_events_widget.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+                self.search_ui.searchResultsContentLayout.addWidget(no_events_widget)
+            
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+
+    def execute_search_from_ui(self):
+        """ADDED: Execute search from search UI elements"""
+        try:
+            if not self.search_ui:
+                return
+            
+            search_query = ""
+            if hasattr(self.search_ui, 'searchBarResults'):
+                search_query = self.search_ui.searchBarResults.text().strip()
+            
+            if search_query:
+                self.execute_search(search_query)
+            else:
+                QMessageBox.information(self, "Search", "Please enter a search term.")
+                
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+
+    def execute_search_from_top_bar(self):
+        """ADDED: Execute search from top search bar in search view"""
+        try:
+            if not self.search_ui:
+                return
+            
+            search_query = ""
+            if hasattr(self.search_ui, 'searchBarTop'):
+                search_query = self.search_ui.searchBarTop.text().strip()
+            
+            if search_query:
+                self.execute_search(search_query)
+            else:
+                QMessageBox.information(self, "Search", "Please enter a search term.")
+                
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+
+    def execute_search(self, search_query):
+        """ADDED: Execute search through event manager and display results"""
+        try:
+            if not search_query or not self.search_ui:
+                return
+            
+            # Search through all events in event manager
+            search_results = self.search_events(search_query.lower())
+            
+            # Clear existing search results
+            if hasattr(self.search_ui, 'searchResultsContentLayout'):
+                # Clear all existing result widgets
+                for i in reversed(range(self.search_ui.searchResultsContentLayout.count())):
+                    child = self.search_ui.searchResultsContentLayout.itemAt(i).widget()
+                    if child:
+                        child.setParent(None)
+            
+            # Display search results
+            if search_results:
+                for date, title, category in search_results:
+                    self.add_search_result_to_ui(date, title, category)
+                
+                # Update search results title
+                if hasattr(self.search_ui, 'labelSearchResults'):
+                    self.search_ui.labelSearchResults.setText(f"Search Results ({len(search_results)} found)")
+            else:
+                # No results found
+                if hasattr(self.search_ui, 'labelSearchResults'):
+                    self.search_ui.labelSearchResults.setText("Search Results (0 found)")
+                
+                # Add "no results" message
+                no_results_widget = QtWidgets.QLabel("No events found matching your search.")
+                no_results_widget.setStyleSheet("""
+                    QLabel {
+                        color: #666;
+                        font-style: italic;
+                        padding: 20px;
+                        text-align: center;
+                    }
+                """)
+                no_results_widget.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+                self.search_ui.searchResultsContentLayout.addWidget(no_results_widget)
+            
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(self, "Error", f"Search execution failed: {str(e)}")
+
+    def search_events(self, search_query):
+        """ADDED: Search through events in event manager"""
+        results = []
+        all_events = self.event_manager.get_events()
+        
+        for date, events in all_events.items():
+            for title, category in events:
+                # Search in title (case-insensitive)
+                if search_query in title.lower():
+                    results.append((date, title, category))
+        
+        # Sort results by date
+        results.sort(key=lambda x: x[0])
+        return results
+
+    def add_search_result_to_ui(self, date, title, category):
+        """ADDED: Add a search result to the search UI"""
+        try:
+            if not self.search_ui:
+                return
+            
+            # Format date
+            formatted_date = date.toString("MMM dd\nyyyy")
+            
+            # Get color based on category
+            color_map = {
+                "Academic": "#28a745",
+                "Organizational": "#007bff",
+                "Deadline": "#fd7e14", 
+                "Holiday": "#dc3545"
+            }
+            color = color_map.get(category, "#6c757d")
+            
+            # Create the search result item using the search UI's method
+            if hasattr(self.search_ui, 'create_search_result_item'):
+                self.search_ui.create_search_result_item(formatted_date, title, color, category)
             
         except Exception as e:
             import traceback
@@ -159,7 +451,7 @@ class MainApplication(QMainWindow):
             QMessageBox.critical(self, "Error", f"Could not switch to activities view: {str(e)}")
 
     def show_add_event_view(self):
-        """Switch to add event view using add event manager - ADDED NEW METHOD"""
+        """Switch to add event view using add event manager"""
         try:
             self.add_event_manager.setup_add_event_view()
             self.current_view = "add_event"
@@ -264,9 +556,12 @@ class MainApplication(QMainWindow):
             self.day_view_manager.refresh_day_view()
         elif self.current_view == "activities":
             self.activities_manager.refresh_activities()
-        elif self.current_view == "add_event":  # ADDED: Handle add event view
+        elif self.current_view == "add_event":
             # No refresh needed for add event view
             pass
+        elif self.current_view == "search":  # FIXED: Handle search view properly
+            # Refresh upcoming events in search view
+            self.populate_upcoming_events_search()
 
     def refresh_events_display(self):
         """Refresh events display - called by EventManager"""
