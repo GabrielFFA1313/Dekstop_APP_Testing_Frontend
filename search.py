@@ -18,16 +18,29 @@ class SearchUi(BaseUi):
         self.setup_search_results_panel()
         
     def setup_search_results_panel(self):
-        """Setup the search results panel on the right side"""
-        # Search Results Container - MADE MUCH BIGGER
+        """Setup the search results panel on the right side - now takes full width"""
+        # FIXED: Set contentLayout properties to eliminate gray background
+        self.contentLayout.setSpacing(0)  # Remove spacing between upcoming events and search results
+        self.contentLayout.setContentsMargins(0, 0, 0, 0)  # Remove margins
+        
+        # FIXED: Set the parent widget background to white to eliminate gray
+        if hasattr(self, 'centralwidget'):
+            self.centralwidget.setStyleSheet("background-color: white;")
+        
+        # Search Results Container - NOW TAKES FULL WIDTH
         self.searchResultsContainer = QtWidgets.QWidget()
-        self.searchResultsContainer.setStyleSheet("background-color: white;")
-        self.searchResultsContainer.setMinimumWidth(600)  # INCREASED from 300
-        self.searchResultsContainer.setMaximumWidth(900)  # INCREASED from 400
+        self.searchResultsContainer.setStyleSheet("""
+            QWidget {
+                background-color: white;
+                border: none;
+                margin: 0px;
+            }
+        """)
+        # Remove width restrictions since it now takes full available space
         
         self.searchResultsLayout = QtWidgets.QVBoxLayout(self.searchResultsContainer)
-        self.searchResultsLayout.setContentsMargins(20, 20, 20, 20)  # INCREASED padding
-        self.searchResultsLayout.setSpacing(15)  # INCREASED spacing
+        self.searchResultsLayout.setContentsMargins(20, 20, 20, 20)  # SAME AS CALENDAR
+        self.searchResultsLayout.setSpacing(15)  # SAME AS CALENDAR
         
         # Search Results Header
         self.searchResultsHeader = QtWidgets.QHBoxLayout()
@@ -41,7 +54,7 @@ class SearchUi(BaseUi):
                 border: none;
                 border-radius: 4px;
                 padding: 8px 15px;
-                font-size: 13px;
+                font-size: 12px;
                 font-weight: bold;
                 min-width: 80px;
             }
@@ -54,14 +67,14 @@ class SearchUi(BaseUi):
         """)
         self.searchResultsHeader.addWidget(self.btnBack)
         
-        # Search Results Title
+        # Search Results Title - REDUCED FONT SIZE TO MATCH CALENDAR
         self.labelSearchResults = QtWidgets.QLabel("Upcoming Events")
-        self.labelSearchResults.setStyleSheet("font-size: 18px; font-weight: bold; color: #084924; margin-left: 15px;")  # INCREASED font size
+        self.labelSearchResults.setStyleSheet("font-size: 14px; font-weight: bold; color: #084924; margin-left: 15px;")  # REDUCED from 18px
         self.searchResultsHeader.addWidget(self.labelSearchResults)
         
         self.searchResultsHeader.addStretch()
         
-        # View Events Dropdown - IMPROVED STYLING
+        # View Events Dropdown - MATCHED TO CALENDAR STYLING
         self.comboViewEvents = QtWidgets.QComboBox()
         self.comboViewEvents.setStyleSheet("""
             QComboBox {
@@ -71,7 +84,7 @@ class SearchUi(BaseUi):
                 background-color: #084924;
                 color: white;
                 min-width: 100px;
-                font-size: 13px;
+                font-size: 12px;
                 font-weight: bold;
             }
             QComboBox:focus {
@@ -98,17 +111,17 @@ class SearchUi(BaseUi):
         self.comboViewEvents.setCurrentText("View Events")
         self.searchResultsHeader.addWidget(self.comboViewEvents)
         
-        # Search Bar beside View Events button - MADE BIGGER
+        # Search Bar beside View Events button - MATCHED TO CALENDAR SIZE
         self.searchBarResults = QtWidgets.QLineEdit()
-        self.searchBarResults.setFixedWidth(200)  # INCREASED from 150
+        self.searchBarResults.setFixedWidth(200)  # SAME AS CALENDAR
         self.searchBarResults.setPlaceholderText("Search events...")
         self.searchBarResults.setStyleSheet("""
             QLineEdit {
                 border: 1px solid #ccc;
                 border-radius: 4px;
-                padding: 6px 12px;
+                padding: 8px 12px;
                 background-color: white;
-                font-size: 13px;
+                font-size: 12px;
             }
             QLineEdit:focus {
                 border-color: #FDC601;
@@ -120,7 +133,7 @@ class SearchUi(BaseUi):
         """)
         self.searchResultsHeader.addWidget(self.searchBarResults)
         
-        # View Dropdown - IMPROVED STYLING
+        # View Dropdown - MATCHED TO CALENDAR STYLING
         self.comboView = QtWidgets.QComboBox()
         self.comboView.setStyleSheet("""
             QComboBox {
@@ -130,7 +143,7 @@ class SearchUi(BaseUi):
                 background-color: #FDC601;
                 color: white;
                 min-width: 80px;
-                font-size: 13px;
+                font-size: 12px;
                 font-weight: bold;
             }
             QComboBox:focus {
@@ -157,7 +170,7 @@ class SearchUi(BaseUi):
         self.comboView.setCurrentText("View")
         self.searchResultsHeader.addWidget(self.comboView)
         
-        # Search Button - IMPROVED STYLING
+        # Search Button - MATCHED TO CALENDAR STYLING
         self.btnSearch = QtWidgets.QPushButton("🔍 Search")
         self.btnSearch.setStyleSheet("""
             QPushButton {
@@ -166,7 +179,7 @@ class SearchUi(BaseUi):
                 border-radius: 4px;
                 padding: 6px 12px;
                 color: #666;
-                font-size: 13px;
+                font-size: 12px;
                 min-width: 80px;
                 font-weight: bold;
             }
@@ -182,27 +195,27 @@ class SearchUi(BaseUi):
         
         self.searchResultsLayout.addLayout(self.searchResultsHeader)
         
-        # Search Results Table Header - MADE BIGGER
+        # Search Results Table Header - MATCHED TO CALENDAR PROPORTIONS
         self.tableHeader = QtWidgets.QWidget()
-        self.tableHeader.setFixedHeight(50)  # INCREASED from 40
+        self.tableHeader.setFixedHeight(40)  # REDUCED to match calendar proportions
         self.tableHeader.setStyleSheet("background-color: #084924; border-radius: 6px;")
         
         self.tableHeaderLayout = QtWidgets.QHBoxLayout(self.tableHeader)
-        self.tableHeaderLayout.setContentsMargins(15, 0, 15, 0)  # INCREASED margins
+        self.tableHeaderLayout.setContentsMargins(15, 0, 15, 0)  # CONSISTENT
         
         self.labelDate = QtWidgets.QLabel("Date")
-        self.labelDate.setStyleSheet("color: white; font-weight: bold; font-size: 14px;")  # INCREASED font
+        self.labelDate.setStyleSheet("color: white; font-weight: bold; font-size: 12px;")  # MATCHED TO CALENDAR
         self.tableHeaderLayout.addWidget(self.labelDate)
         
         self.tableHeaderLayout.addStretch()
         
         self.labelEvent = QtWidgets.QLabel("Event")
-        self.labelEvent.setStyleSheet("color: white; font-weight: bold; font-size: 14px;")  # INCREASED font
+        self.labelEvent.setStyleSheet("color: white; font-weight: bold; font-size: 12px;")  # MATCHED TO CALENDAR
         self.tableHeaderLayout.addWidget(self.labelEvent)
         
         self.searchResultsLayout.addWidget(self.tableHeader)
         
-        # Search Results List - IMPROVED STYLING
+        # Search Results List - MATCHED TO CALENDAR STYLING
         self.searchResultsList = QtWidgets.QScrollArea()
         self.searchResultsList.setWidgetResizable(True)
         self.searchResultsList.setStyleSheet("""
@@ -229,11 +242,8 @@ class SearchUi(BaseUi):
         # Content widget for scroll area
         self.searchResultsContent = QtWidgets.QWidget()
         self.searchResultsContentLayout = QtWidgets.QVBoxLayout(self.searchResultsContent)
-        self.searchResultsContentLayout.setContentsMargins(8, 8, 8, 8)  # INCREASED margins
-        self.searchResultsContentLayout.setSpacing(5)  # INCREASED spacing
-        
-        # REMOVED: No longer adding sample search results here
-        # The main application will populate this with real data
+        self.searchResultsContentLayout.setContentsMargins(10, 10, 10, 10)  # SLIGHTLY REDUCED
+        self.searchResultsContentLayout.setSpacing(8)  # SLIGHTLY INCREASED FOR READABILITY
         
         # DEBUG: Add a test label to verify layout is working
         test_label = QtWidgets.QLabel("Loading events...")
@@ -263,14 +273,14 @@ class SearchUi(BaseUi):
             print(f"Error clearing search results: {e}")
     
     def create_search_result_item(self, date, event, color, description):
-        """Create a single search result item - MADE BIGGER"""
+        """Create a single search result item - MATCHED TO CALENDAR PROPORTIONS"""
         item_widget = QtWidgets.QWidget()
-        item_widget.setFixedHeight(90)  # INCREASED from 80
+        item_widget.setFixedHeight(70)  # REDUCED from 90 to match calendar scale
         item_widget.setStyleSheet(f"""
             QWidget {{
                 background-color: {color};
-                border-radius: 8px;
-                margin: 4px;
+                border-radius: 6px;
+                margin: 3px;
             }}
             QWidget:hover {{
                 background-color: {self.adjust_color_brightness(color, -20)};
@@ -278,25 +288,25 @@ class SearchUi(BaseUi):
         """)
         
         item_layout = QtWidgets.QHBoxLayout(item_widget)
-        item_layout.setContentsMargins(20, 10, 20, 10)  # INCREASED margins
+        item_layout.setContentsMargins(15, 8, 15, 8)  # REDUCED margins to match calendar
         
-        # Date column - MADE BIGGER
+        # Date column - MATCHED TO CALENDAR PROPORTIONS
         date_label = QtWidgets.QLabel(date)
-        date_label.setStyleSheet("color: white; font-weight: bold; font-size: 13px;")  # INCREASED font
-        date_label.setFixedWidth(120)  # INCREASED from 100
+        date_label.setStyleSheet("color: white; font-weight: bold; font-size: 12px;")  # MATCHED TO CALENDAR
+        date_label.setFixedWidth(100)  # REDUCED to match calendar proportions
         date_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         item_layout.addWidget(date_label)
         
         # Event details column
         event_layout = QtWidgets.QVBoxLayout()
-        event_layout.setSpacing(6)  # INCREASED spacing
+        event_layout.setSpacing(4)  # REDUCED spacing
         
         event_title = QtWidgets.QLabel(event)
-        event_title.setStyleSheet("color: white; font-weight: bold; font-size: 15px;")  # INCREASED font
+        event_title.setStyleSheet("color: white; font-weight: bold; font-size: 13px;")  # REDUCED to match calendar
         event_layout.addWidget(event_title)
         
         event_desc = QtWidgets.QLabel(description)
-        event_desc.setStyleSheet("color: white; font-size: 13px;")  # INCREASED font
+        event_desc.setStyleSheet("color: white; font-size: 11px;")  # REDUCED to match calendar
         event_desc.setWordWrap(True)
         event_layout.addWidget(event_desc)
         

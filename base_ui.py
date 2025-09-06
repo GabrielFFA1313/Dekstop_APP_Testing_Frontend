@@ -254,7 +254,8 @@ class BaseUi(object):
         self.centralContent.setMinimumWidth(150)
         self.centralContent.setMaximumWidth(500)
         self.centralContentLayout = QtWidgets.QVBoxLayout(self.centralContent)
-        self.centralContentLayout.setContentsMargins(10, 10, 10, 10)
+        self.contentLayout.setSpacing(0)
+        self.contentLayout.setContentsMargins(0, 0, 0, 0)
 
         # Top Bar with title and search
         self.topBar = QtWidgets.QHBoxLayout()

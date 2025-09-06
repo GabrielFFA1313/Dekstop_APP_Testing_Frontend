@@ -233,42 +233,150 @@ class MainApplication(QMainWindow):
                     pass
                 self.search_ui.searchBarTop.returnPressed.connect(self.execute_search_from_top_bar)
             
+            # ADDED: Connect filter dropdown for search view
+            if hasattr(self.search_ui, 'comboUpcomingFilter'):
+                try:
+                    self.search_ui.comboUpcomingFilter.currentTextChanged.disconnect()
+                except:
+                    pass
+                self.search_ui.comboUpcomingFilter.currentTextChanged.connect(self.filter_upcoming_events_search)
+            
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+
+    def filter_upcoming_events_search(self, filter_text):
+        """ADDED: Filter upcoming events in search view"""
+        try:
+            if self.current_view != "search" or not self.search_ui:
+                return
+            
+            if not hasattr(self.search_ui, 'listUpcoming'):
+                return
+                
+            # Map filter text to categories used by EventManager
+            filter_map = {
+                "All Events": "All",
+                "Academic Activities": "Academic",
+                "Organizational Activities": "Organizational", 
+                "Deadlines": "Deadline",
+                "Holidays": "Holiday"
+            }
+            
+            filter_category = filter_map.get(filter_text, "All")
+            upcoming_events = self.event_manager.get_upcoming_events(filter_category, limit=None)
+            
+            # Clear the existing list
+            self.search_ui.listUpcoming.clear()
+            
+            # Add filtered events to the list
+            for date, title, category in upcoming_events:
+                formatted_date = date.toString("MMM dd, yyyy")
+                
+                icon_map = {
+                    "Academic": "🟢",
+                    "Organizational": "🔵", 
+                    "Deadline": "🟠",
+                    "Holiday": "🔴"
+                }
+                icon = icon_map.get(category, "⚪")
+                
+                item_text = f"{icon} {title}\n     {formatted_date}"
+                item = QtWidgets.QListWidgetItem(item_text)
+                self.search_ui.listUpcoming.addItem(item)
+            
+            print(f"Filtered upcoming events in search view: {filter_category} ({len(upcoming_events)} events)")
+            
         except Exception as e:
             import traceback
             traceback.print_exc()
 
     def populate_upcoming_events_search(self):
-        """FIXED: Populate upcoming events in search view"""
+        """FIXED: Populate upcoming events in search view using the proper listUpcoming widget"""
         try:
             if not self.search_ui:
                 return
             
-            # Clear sample search results first
+            # Use the inherited listUpcoming widget from BaseUi, not the search results area
+            if not hasattr(self.search_ui, 'listUpcoming'):
+                print("Warning: listUpcoming widget not found in search UI")
+                return
+            
+            # Clear the existing upcoming events list
+            self.search_ui.listUpcoming.clear()
+            
+            # Get upcoming events from event manager
+            upcoming_events = self.event_manager.get_upcoming_events(limit=None)  # Get all upcoming events
+            
+            if upcoming_events:
+                # Add events to the upcoming events list (same format as calendar view)
+                for date, title, category in upcoming_events:
+                    formatted_date = date.toString("MMM dd, yyyy")
+                    
+                    icon_map = {
+                        "Academic": "🟢",
+                        "Organizational": "🔵", 
+                        "Deadline": "🟠",
+                        "Holiday": "🔴"
+                    }
+                    icon = icon_map.get(category, "⚪")
+                    
+                    item_text = f"{icon} {title}\n     {formatted_date}"
+                    item = QtWidgets.QListWidgetItem(item_text)
+                    self.search_ui.listUpcoming.addItem(item)
+            
+            print(f"Populated {len(upcoming_events) if upcoming_events else 0} events in search view upcoming list")
+            
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            print(f"Error populating upcoming events in search view: {e}")
+
+    def clear_search_results_only(self):
+        """ADDED: Method to clear only the search results area, not upcoming events"""
+        try:
+            if not self.search_ui:
+                return
+            
+            # Clear only the search results area
             if hasattr(self.search_ui, 'searchResultsContentLayout'):
                 # Clear all existing result widgets
                 for i in reversed(range(self.search_ui.searchResultsContentLayout.count())):
                     child = self.search_ui.searchResultsContentLayout.itemAt(i).widget()
                     if child:
                         child.setParent(None)
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+
+    def execute_search(self, search_query):
+        """UPDATED: Execute search through event manager and display results"""
+        try:
+            if not search_query or not self.search_ui:
+                return
             
-            # Get upcoming events from event manager
-            upcoming_events = self.event_manager.get_upcoming_events(limit=10)  # Limit to 10 events
+            # Search through all events in event manager
+            search_results = self.search_events(search_query.lower())
             
-            if upcoming_events:
-                for date, title, category in upcoming_events:
+            # Clear only the search results area (not upcoming events)
+            self.clear_search_results_only()
+            
+            # Display search results in the search results area
+            if search_results:
+                for date, title, category in search_results:
                     self.add_search_result_to_ui(date, title, category)
                 
                 # Update search results title
                 if hasattr(self.search_ui, 'labelSearchResults'):
-                    self.search_ui.labelSearchResults.setText(f"Upcoming Events ({len(upcoming_events)} found)")
+                    self.search_ui.labelSearchResults.setText(f"Search Results ({len(search_results)} found)")
             else:
-                # No upcoming events
+                # No results found
                 if hasattr(self.search_ui, 'labelSearchResults'):
-                    self.search_ui.labelSearchResults.setText("Upcoming Events (0 found)")
+                    self.search_ui.labelSearchResults.setText("Search Results (0 found)")
                 
-                # Add "no events" message
-                no_events_widget = QtWidgets.QLabel("No upcoming events found.")
-                no_events_widget.setStyleSheet("""
+                # Add "no results" message to search results area
+                no_results_widget = QtWidgets.QLabel("No events found matching your search.")
+                no_results_widget.setStyleSheet("""
                     QLabel {
                         color: #666;
                         font-style: italic;
@@ -276,12 +384,13 @@ class MainApplication(QMainWindow):
                         text-align: center;
                     }
                 """)
-                no_events_widget.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-                self.search_ui.searchResultsContentLayout.addWidget(no_events_widget)
+                no_results_widget.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+                self.search_ui.searchResultsContentLayout.addWidget(no_results_widget)
             
         except Exception as e:
             import traceback
             traceback.print_exc()
+            QMessageBox.critical(self, "Error", f"Search execution failed: {str(e)}")
 
     def execute_search_from_ui(self):
         """ADDED: Execute search from search UI elements"""
