@@ -1,4 +1,4 @@
-# DAY_VIEW.PY THIS IS A UI FILE
+# day_view.py
 from PyQt6 import QtCore, QtGui, QtWidgets
 from base_ui import BaseUi
 from datetime import datetime, timedelta
@@ -13,31 +13,48 @@ class DayViewUi(BaseUi):
         
         # Update the title
         self.labelTitleBar.setText("Calendar - Day View")
-        self.labelTitle.setText("Upcoming Events")  # Keep original title for central content
+        self.labelTitle.setText("Upcoming Events")
         
-        # Keep the default upcoming events section in center and add day view to right
+        # Adjust the upcoming events section width to match calendar UI
+        self.adjust_upcoming_events_width()
+        
+        # Add day view to the existing content layout
         self.setup_day_view_content()
 
-    def setup_day_view_content(self):
-        """Setup the day view content area as right sidebar"""
+    def adjust_upcoming_events_width(self):
+        """Adjust the upcoming events section width to match calendar UI"""
+        # Set the same width constraints as in calendar_ui.py
+        self.centralContent.setMinimumWidth(150)
+        self.centralContent.setMaximumWidth(500)
         
-        # Create day view container
+        # Ensure the central content maintains its size
+        self.centralContent.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Fixed,
+            QtWidgets.QSizePolicy.Policy.Expanding
+        )
+
+    def setup_day_view_content(self):
+        """Setup the day view content area to fill remaining space like calendar UI"""
+        
+        # Create day view container that expands like calendar UI does
         self.dayViewContainer = QtWidgets.QWidget()
         self.dayViewContainer.setStyleSheet("background-color: white; border-left: 1px solid #ddd;")
-        self.dayViewContainer.setMinimumWidth(400)
-        self.dayViewContainer.setMaximumWidth(600)
+        # Remove the fixed width completely to match calendar UI behavior
+        # Don't set any width constraints - let it expand naturally
+        
         self.dayViewLayout = QtWidgets.QVBoxLayout(self.dayViewContainer)
-        self.dayViewLayout.setContentsMargins(15, 15, 15, 15)
-        self.dayViewLayout.setSpacing(10)
+        self.dayViewLayout.setContentsMargins(20, 20, 20, 20)
+        self.dayViewLayout.setSpacing(15)
         
-        # Setup day view header
+        # Setup day view header and calendar
         self.setup_day_view_header()
-        
-        # Setup day view calendar
         self.setup_day_view_calendar()
         
-        # Add to content layout (this will be to the right of the central upcoming events)
+        # Add to the existing contentLayout from base UI exactly like calendar UI does
         self.contentLayout.addWidget(self.dayViewContainer)
+        
+        # Don't set any stretch factors or spacers - let it behave like calendar UI
+        # The calendar UI doesn't set stretch factors, so neither should we
 
     def setup_day_view_header(self):
         """Setup the header with date navigation and view controls"""
@@ -192,18 +209,25 @@ class DayViewUi(BaseUi):
         self.dayViewLayout.addWidget(self.dayScrollArea)
 
     def create_time_slots(self):
-        """Create time slots for the day view"""
+        """Create time slots that expand to fill available width"""
         start_hour = 7  # 7 AM
         end_hour = 19   # 7 PM 
         
         for hour in range(start_hour, end_hour + 1):
-            # Create time slot container
+            # Create time slot container that fills available width
             timeSlotContainer = QtWidgets.QWidget()
-            timeSlotContainer.setFixedHeight(45)  # Smaller height for right sidebar
+            timeSlotContainer.setFixedHeight(60)  # Fixed height but expandable width
+            timeSlotContainer.setSizePolicy(
+                QtWidgets.QSizePolicy.Policy.Expanding,  # Expand horizontally
+                QtWidgets.QSizePolicy.Policy.Fixed       # Fixed height
+            )
             timeSlotContainer.setStyleSheet("""
                 QWidget {
                     border-bottom: 1px solid #e0e0e0;
                     background-color: white;
+                }
+                QWidget:hover {
+                    background-color: #f9f9f9;
                 }
             """)
             
@@ -211,31 +235,36 @@ class DayViewUi(BaseUi):
             timeSlotLayout.setContentsMargins(0, 0, 0, 0)
             timeSlotLayout.setSpacing(0)
             
-            # Time label
+            # Time label with fixed width
             if hour == 0:
-                display_time = "12 AM"
+                display_time = "12:00 AM"
             elif hour < 12:
-                display_time = f"{hour} AM"
+                display_time = f"{hour}:00 AM"
             elif hour == 12:
-                display_time = "12 PM"
+                display_time = "12:00 PM"
             else:
-                display_time = f"{hour-12} PM"
+                display_time = f"{hour-12}:00 PM"
             
             timeLabel = QtWidgets.QLabel(display_time)
-            timeLabel.setFixedWidth(50)  # Smaller width
+            timeLabel.setFixedWidth(100)  # Fixed width for time column
             timeLabel.setStyleSheet("""
                 QLabel {
                     color: #666;
-                    font-size: 10px;
+                    font-size: 12px;
                     font-weight: bold;
-                    padding: 3px;
-                    border-right: 1px solid #e0e0e0;
+                    padding: 8px;
+                    border-right: 2px solid #e0e0e0;
+                    background-color: #f8f9fa;
                 }
             """)
             timeLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop | QtCore.Qt.AlignmentFlag.AlignCenter)
             
-            # Event area
+            # Event area that expands to fill ALL available space
             eventArea = QtWidgets.QWidget()
+            eventArea.setSizePolicy(
+                QtWidgets.QSizePolicy.Policy.Expanding,  # Fill all remaining width
+                QtWidgets.QSizePolicy.Policy.Expanding   # Fill available height
+            )
             eventArea.setStyleSheet("""
                 QWidget {
                     background-color: #fafafa;
@@ -246,20 +275,22 @@ class DayViewUi(BaseUi):
                 }
             """)
             eventLayout = QtWidgets.QVBoxLayout(eventArea)
-            eventLayout.setContentsMargins(5, 2, 5, 2)  # Smaller margins
+            eventLayout.setContentsMargins(15, 8, 15, 8)  # More generous margins
             
-            # # Add sample events for demonstration
-            # if hour == 9:  # 9 AM
-            #     self.add_compact_event(eventLayout, "Meeting", "#4CAF50")
-            # elif hour == 11:  # 11 AM
-            #     self.add_compact_event(eventLayout, "Review", "#2196F3")
-            # elif hour == 14:  # 2 PM
-            #     self.add_compact_event(eventLayout, "Workshop", "#FF9800")
-            # elif hour == 16:  # 4 PM
-            #     self.add_compact_event(eventLayout, "Office Hours", "#9C27B0")
+            # Add a placeholder label for events
+            placeholderLabel = QtWidgets.QLabel("No events scheduled")
+            placeholderLabel.setStyleSheet("""
+                QLabel {
+                    color: #999;
+                    font-style: italic;
+                    font-size: 12px;
+                    padding: 5px;
+                }
+            """)
+            eventLayout.addWidget(placeholderLabel)
             
             timeSlotLayout.addWidget(timeLabel)
-            timeSlotLayout.addWidget(eventArea, 1)
+            timeSlotLayout.addWidget(eventArea, 1)  # Stretch factor 1 to fill remaining space
             
             self.dayCalendarLayout.addWidget(timeSlotContainer)
 
