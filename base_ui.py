@@ -408,6 +408,9 @@ class BaseUi(object):
         """Generate title based on user role and page"""
         role_titles = {
             "admin": f"CISC {page_name} - Admin Panel - Academic Year 2025 - 2026",
+            "student": f"CISC {page_name} - Student Panel - Academic Year 2025 - 2026",
+            "faculty": f"CISC {page_name} - Faculty Panel - Academic Year 2025 - 2026",
+            "organization": f"CISC {page_name} - Organization Panel - Academic Year 2025 - 2026",
 
         }
         return role_titles.get(self.user_role, role_titles["admin"])

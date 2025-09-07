@@ -19,6 +19,8 @@ class Ui_MainWindow(BaseUi):
         
         # Now add the specific content for this page - the Activities Table
         self.setup_activities_section()
+
+        self.apply_role_based_visibility()
         
         # Setup filter section AFTER BaseUi is complete
         self.setup_filter_section()
@@ -208,6 +210,8 @@ class Ui_MainWindow(BaseUi):
             }
         """)
         self.topControlsLayout.addWidget(self.btnAddEvent)
+        self.btnAddEvent.setVisible(True)
+        
         
         # Back button - positioned on the right
         self.btnback = QtWidgets.QPushButton("← Back to Calendar")
@@ -346,6 +350,13 @@ class Ui_MainWindow(BaseUi):
         if hasattr(self, 'comboActivityType'):
             self.comboActivityType.setItemText(0, _translate("MainWindow", "All Events"))
 
+    def apply_role_based_visibility(self):
+        if self.user_role == "student":
+            self.btnAddEvent.setVisible(False)
+        else:
+            self.btnAddEvent.setVisible(True)
+
+
 
 class ActivitiesApp(QMainWindow):
     """Standalone application class for activities window (for testing)"""
@@ -378,7 +389,7 @@ class ActivitiesApp(QMainWindow):
         }
         title = role_titles.get(self.user_role, "CISC Calendar - Activities")
         self.setWindowTitle(title)
-
+        
 
 if __name__ == "__main__":
     import sys
@@ -391,7 +402,7 @@ if __name__ == "__main__":
 
     # Create instance of Ui_MainWindow
     ui = Ui_MainWindow()
-    ui.setupUi(MainWindow, user_role="student")  # change role here if needed
+    ui.setupUi(MainWindow, user_role="admin")  # change role here if needed
 
     MainWindow.show()
     sys.exit(app.exec())

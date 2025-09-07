@@ -197,19 +197,7 @@ class CalendarUi(BaseUi):
             }
         """)
         self.calendarControlsLayout.addWidget(self.searchBarCalendar)
-        
-        # ugly might delete later
-        # self.btnaddEvent = QtWidgets.QPushButton("Add Event")
-        # self.btnaddEvent.setStyleSheet(button_style)
-        # self.buttonLayout.addWidget(self.btnaddEvent)
-        
-        # self.btneditEvent = QtWidgets.QPushButton("Edit Event")
-        # self.btneditEvent.setStyleSheet(button_style)
-        # self.buttonLayout.addWidget(self.btneditEvent)
-        
-        # self.btndeleteEvent = QtWidgets.QPushButton("Delete Event")
-        # self.btndeleteEvent.setStyleSheet(button_style)
-        # self.buttonLayout.addWidget(self.btndeleteEvent)
+
 
         # Apply role-based button visibility
         self.apply_role_based_visibility()
@@ -226,15 +214,10 @@ class CalendarUi(BaseUi):
             "Holidays"
         ])
         self.comboUpcomingFilter.setCurrentText("All Events")
-# Ugly might delete later
     def apply_role_based_visibility(self):
         if self.user_role == "admin":
             # Admin can see all buttons
             self.btnviewEvent.setVisible(True)
-            # self.btnaddEvent.setVisible(True)
-            # self.btneditEvent.setVisible(True)
-            # self.btndeleteEvent.setVisible(True)
-            
     
     def highlight_current_page(self):
         """Highlight the Calendar button in sidebar to show current page"""

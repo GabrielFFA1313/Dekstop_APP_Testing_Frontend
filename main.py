@@ -117,14 +117,6 @@ class MainApplication(QMainWindow):
                     pass
                 self.calendar_ui.searchBarTop.returnPressed.connect(self.perform_search)
             
-            # ADDED: Connect add event button - if your calendar has an add event button
-            if hasattr(self.calendar_ui, 'btnaddEvent'):
-                try:
-                    self.calendar_ui.btnaddEvent.clicked.disconnect()
-                except:
-                    pass
-                self.calendar_ui.btnaddEvent.clicked.connect(self.show_add_event_view)
-            
             # Connect calendar date selection
             if hasattr(self.calendar_ui, 'calendarWidget'):
                 try:
