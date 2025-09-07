@@ -1,22 +1,37 @@
-# ADD_EVENT_MANAGER.PY - Handles all add event functionality (UPDATED with Upcoming Events)
+# ADD_EVENT_MANAGER.PY - Handles both add and edit event functionality (UPDATED)
 from PyQt6.QtWidgets import QMessageBox, QDialog
 from PyQt6.QtCore import QDate, QTime, Qt, QTimer
 from PyQt6 import QtWidgets, QtGui, QtCore
 from datetime import datetime, time
 
-from add_event import Ui_MainWindow
+from add_event import Ui_MainWindow as AddEventUi
+from edit_event import Ui_MainWindow as EditEventUi
 
 
 class AddEventManager:
-    """Manager class for handling add event functionality in the same window"""
+    """Manager class for handling both add and edit event functionality in the same window"""
     
     def __init__(self, main_app, event_manager):
         self.main_app = main_app
         self.event_manager = event_manager
         self.add_event_ui = None
+        self.mode = "add"  # "add" or "edit"
+        self.edit_event_data = None
 
     def setup_add_event_view(self):
         """Setup the add event view in the main window"""
+        self.mode = "add"
+        self.edit_event_data = None
+        self._setup_event_view(AddEventUi)
+
+    def setup_edit_event_view(self, event_data=None):
+        """Setup the edit event view in the main window"""
+        self.mode = "edit"
+        self.edit_event_data = event_data
+        self._setup_event_view(EditEventUi)
+
+    def _setup_event_view(self, ui_class):
+        """Common setup for both add and edit event views"""
         try:
             # Store current geometry
             geometry = self.main_app.geometry() if hasattr(self.main_app, 'geometry') and self.main_app.geometry().isValid() else None
@@ -24,8 +39,12 @@ class AddEventManager:
             # Clear any existing central widget
             self.main_app.setCentralWidget(None)
             
-            # Create and setup Add Event UI
-            self.add_event_ui = Ui_MainWindow()
+            # Force garbage collection
+            import gc
+            gc.collect()
+            
+            # Create and setup Event UI
+            self.add_event_ui = ui_class()
             self.add_event_ui.setupUi(self.main_app, user_role=self.main_app.user_role)
             
             # Set event manager reference in the UI
@@ -37,6 +56,10 @@ class AddEventManager:
             # Setup connections
             self.setup_add_event_connections()
             
+            # Populate form with existing data if in edit mode
+            if self.mode == "edit" and self.edit_event_data:
+                self.populate_form_with_data(self.edit_event_data)
+            
             # Restore geometry if we had one
             if geometry:
                 self.main_app.setGeometry(geometry)
@@ -44,24 +67,105 @@ class AddEventManager:
             # Load upcoming events data with delay to ensure UI is ready
             QTimer.singleShot(100, self.populate_upcoming_events)
             
-            self.main_app.current_view = "add_event"
-            self.main_app.setWindowTitle("Campus Event Manager - Add Event")
+            self.main_app.current_view = f"{self.mode}_event"
+            title = "Campus Event Manager - Add Event" if self.mode == "add" else "Campus Event Manager - Edit Event"
+            self.main_app.setWindowTitle(title)
             
         except Exception as e:
             import traceback
             traceback.print_exc()
-            QMessageBox.critical(self.main_app, "Error", f"Could not setup add event view: {str(e)}")
+            QMessageBox.critical(self.main_app, "Error", f"Could not setup {self.mode} event view: {str(e)}")
+
+    def populate_form_with_data(self, event_data):
+        """Populate form fields with existing event data for editing"""
+        try:
+            if not event_data or not self.add_event_ui:
+                return
+            
+            # Basic fields
+            if 'title' in event_data:
+                self.add_event_ui.inputEventTitle.setText(event_data['title'])
+            
+            if 'description' in event_data:
+                self.add_event_ui.inputDescription.setPlainText(event_data['description'])
+            
+            if 'location' in event_data:
+                self.add_event_ui.inputLocation.setText(event_data['location'])
+            
+            # Event type
+            if 'type' in event_data or 'category' in event_data:
+                event_type = event_data.get('type', event_data.get('category', ''))
+                index = self.add_event_ui.comboEventType.findText(event_type)
+                if index >= 0:
+                    self.add_event_ui.comboEventType.setCurrentIndex(index)
+            
+            # Dates
+            if 'date' in event_data:
+                # If single date field
+                if isinstance(event_data['date'], QDate):
+                    self.add_event_ui.dateStart.setDate(event_data['date'])
+                    self.add_event_ui.dateEnd.setDate(event_data['date'])
+            else:
+                # Separate start/end dates
+                if 'start_date' in event_data and isinstance(event_data['start_date'], QDate):
+                    self.add_event_ui.dateStart.setDate(event_data['start_date'])
+                
+                if 'end_date' in event_data and isinstance(event_data['end_date'], QDate):
+                    self.add_event_ui.dateEnd.setDate(event_data['end_date'])
+            
+            # Times
+            if 'time' in event_data:
+                # Parse time string if needed
+                time_str = event_data['time']
+                if isinstance(time_str, str):
+                    try:
+                        # Handle formats like "9:00 AM", "2:00 PM"
+                        if 'AM' in time_str or 'PM' in time_str:
+                            time_part = time_str.replace('AM', '').replace('PM', '').strip()
+                            hour, minute = map(int, time_part.split(':'))
+                            
+                            if 'PM' in time_str and hour != 12:
+                                hour += 12
+                            elif 'AM' in time_str and hour == 12:
+                                hour = 0
+                            
+                            q_time = QTime(hour, minute)
+                            self.add_event_ui.timeStart.setTime(q_time)
+                            
+                            # Set AM/PM buttons
+                            if 'AM' in time_str:
+                                self.add_event_ui.btnStartAM.setChecked(True)
+                                self.add_event_ui.btnStartPM.setChecked(False)
+                            else:
+                                self.add_event_ui.btnStartAM.setChecked(False)
+                                self.add_event_ui.btnStartPM.setChecked(True)
+                    except:
+                        pass  # Use default time if parsing fails
+            
+            # Target audience (if available)
+            if 'target_audience' in event_data:
+                audience = event_data['target_audience']
+                if isinstance(audience, list):
+                    self.add_event_ui.checkStudents.setChecked('Students' in audience)
+                    self.add_event_ui.checkFaculty.setChecked('Faculty' in audience)
+                    self.add_event_ui.checkOrgOfficer.setChecked('Organization Officer' in audience)
+                    self.add_event_ui.checkAll.setChecked('All' in audience)
+            
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
 
     def setup_add_event_connections(self):
         """Setup add event specific connections"""
         try:
-            # Connect save button
-            if hasattr(self.add_event_ui, 'btnSave'):
+            # Connect save/update button (check for both save and update buttons)
+            save_btn = getattr(self.add_event_ui, 'btnSave', None) or getattr(self.add_event_ui, 'btnUpdate', None)
+            if save_btn:
                 try:
-                    self.add_event_ui.btnSave.clicked.disconnect()
+                    save_btn.clicked.disconnect()
                 except:
                     pass
-                self.add_event_ui.btnSave.clicked.connect(self.save_event)
+                save_btn.clicked.connect(self.save_event)
             
             # Connect cancel button
             if hasattr(self.add_event_ui, 'btnCancel'):
@@ -71,13 +175,13 @@ class AddEventManager:
                     pass
                 self.add_event_ui.btnCancel.clicked.connect(self.cancel_event)
             
-            # Connect back button - modified to navigate back to calendar
+            # Connect back button - modified to navigate back to previous view
             if hasattr(self.add_event_ui, 'btnBack'):
                 try:
                     self.add_event_ui.btnBack.clicked.disconnect()
                 except:
                     pass
-                self.add_event_ui.btnBack.clicked.connect(self.go_back_to_calendar)
+                self.add_event_ui.btnBack.clicked.connect(self.go_back_to_previous_view)
             
             # Connect manage events button
             if hasattr(self.add_event_ui, 'btnManageEvents'):
@@ -195,7 +299,7 @@ class AddEventManager:
             traceback.print_exc()
 
     def save_event(self):
-        """Handle save event action with full validation and event manager integration"""
+        """Handle save or update event action based on current mode"""
         try:
             # Get form data
             event_data = self.get_form_data()
@@ -210,41 +314,63 @@ class AddEventManager:
                 )
                 return
             
-            # Save to event manager if available
-            if self.event_manager:
-                success = self.save_to_event_manager(event_data)
-                if success:
-                    QMessageBox.information(
-                        self.main_app,
-                        "Success",
-                        f"Event '{event_data['title']}' has been saved successfully!"
-                    )
-                    # Clear form and navigate back to calendar
-                    self.clear_form()
-                    self.go_back_to_calendar()
-                else:
-                    QMessageBox.critical(
-                        self.main_app,
-                        "Error",
-                        "Failed to save event. Please try again."
-                    )
-            else:
-                # No event manager available - show info message
+            # Save or update based on mode
+            if self.mode == "add":
+                success = self.save_new_event(event_data)
+                action = "saved"
+            else:  # edit mode
+                success = self.update_existing_event(event_data)
+                action = "updated"
+            
+            if success:
                 QMessageBox.information(
                     self.main_app,
-                    "Event Created",
-                    f"Event '{event_data['title']}' would be saved.\n\n" +
-                    f"Type: {event_data['type']}\n" +
-                    f"Date: {event_data['start_date'].toString('MMM dd, yyyy')}\n" +
-                    f"Time: {event_data['start_time'].toString('hh:mm AP')}"
+                    "Success",
+                    f"Event '{event_data['title']}' has been {action} successfully!"
                 )
-                self.clear_form()
-                self.go_back_to_calendar()
+                # Clear form only if adding and navigate back
+                if self.mode == "add":
+                    self.clear_form()
+                self.go_back_to_previous_view()
+            else:
+                QMessageBox.critical(
+                    self.main_app,
+                    "Error",
+                    f"Failed to {action[:-1]} event. Please try again."
+                )
                     
         except Exception as e:
             import traceback
             traceback.print_exc()
-            QMessageBox.critical(self.main_app, "Error", f"Could not save event: {str(e)}")
+            QMessageBox.critical(self.main_app, "Error", f"Could not {self.mode} event: {str(e)}")
+
+    def save_new_event(self, event_data):
+        """Save a new event"""
+        if self.event_manager:
+            return self.save_to_event_manager(event_data)
+        else:
+            # No event manager available - show info message
+            QMessageBox.information(
+                self.main_app,
+                "Event Created",
+                f"Event '{event_data['title']}' would be saved.\n\n" +
+                f"Type: {event_data['type']}\n" +
+                f"Date: {event_data['start_date'].toString('MMM dd, yyyy')}\n" +
+                f"Time: {event_data['start_time'].toString('hh:mm AP')}"
+            )
+            return True
+
+    def update_existing_event(self, event_data):
+        """Update an existing event"""
+        if self.event_manager and hasattr(self.event_manager, 'update_event'):
+            # If event manager has update method
+            return self.event_manager.update_event(self.edit_event_data, event_data)
+        elif self.event_manager:
+            # Fallback: use save method for now
+            return self.save_to_event_manager(event_data)
+        else:
+            # No event manager - simulate success
+            return True
 
     def get_form_data(self):
         """Extract data from the form"""
@@ -407,10 +533,11 @@ class AddEventManager:
         try:
             # Ask for confirmation if form has data
             if self.form_has_data():
+                action = "adding" if self.mode == "add" else "editing"
                 reply = QMessageBox.question(
                     self.main_app,
                     "Confirm Cancel",
-                    "You have unsaved changes. Are you sure you want to cancel?",
+                    f"You have unsaved changes. Are you sure you want to cancel {action} this event?",
                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                     QMessageBox.StandardButton.No
                 )
@@ -418,9 +545,10 @@ class AddEventManager:
                 if reply == QMessageBox.StandardButton.No:
                     return
             
-            # Clear form and navigate back to calendar
-            self.clear_form()
-            self.go_back_to_calendar()
+            # Clear form only if in add mode and navigate back
+            if self.mode == "add":
+                self.clear_form()
+            self.go_back_to_previous_view()
                 
         except Exception as e:
             import traceback
@@ -477,6 +605,19 @@ class AddEventManager:
             # Navigate to calendar using main app method
             self.go_back_to_calendar()
             
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+
+    def go_back_to_previous_view(self):
+        """Navigate back to the previous view (could be calendar or activities)"""
+        try:
+            # Check if we came from activities (edit mode typically comes from activities)
+            if self.mode == "edit" and hasattr(self.main_app, 'show_activities_view'):
+                self.main_app.show_activities_view()
+            else:
+                # Default to calendar view
+                self.go_back_to_calendar()
         except Exception as e:
             import traceback
             traceback.print_exc()
