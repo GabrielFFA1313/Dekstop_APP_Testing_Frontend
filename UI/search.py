@@ -1,6 +1,6 @@
 # SEARCH
 from PyQt6 import QtCore, QtGui, QtWidgets
-from base_ui import BaseUi
+from .base_ui import BaseUi
 
 class SearchUi(BaseUi):
     """Search UI class that extends BaseUi with search results functionality"""

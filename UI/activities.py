@@ -3,7 +3,7 @@ import sys
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QHeaderView, QTableWidget, QTableWidgetItem, QApplication, QMainWindow
 from PyQt6.QtCore import Qt, QDate
-from base_ui import BaseUi
+from .base_ui import BaseUi
 
 class Ui_MainWindow(BaseUi):
 

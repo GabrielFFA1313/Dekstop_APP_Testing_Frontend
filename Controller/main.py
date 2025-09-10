@@ -1,15 +1,19 @@
-# MAIN.PY - Calendar focused main application (UPDATED with Search Integration)
+# MAIN.PY 
 import sys
+import os
 from PyQt6.QtWidgets import QApplication, QMainWindow, QMessageBox
 from PyQt6.QtCore import QDate, QTimer, Qt
 from PyQt6 import QtWidgets, QtGui, QtCore
 
-# Import UI modules
-from calendar_ui import CalendarUi
-from search import SearchUi  # ADDED: Import search UI
-from event_manager import EventManager
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, parent_dir)
 
-# Import view managers
+# Import UI modules
+from UI.calendar_ui import CalendarUi
+from UI.search import SearchUi 
+from mock.event_manager import EventManager
+
+# Import view managers 
 from activities_manager import ActivitiesManager
 from day_view_manager import DayViewManager
 from add_event_manager import AddEventManager
@@ -421,54 +425,6 @@ class MainApplication(QMainWindow):
         except Exception as e:
             import traceback
             traceback.print_exc()
-
-    def execute_search(self, search_query):
-        """ADDED: Execute search through event manager and display results"""
-        try:
-            if not search_query or not self.search_ui:
-                return
-            
-            # Search through all events in event manager
-            search_results = self.search_events(search_query.lower())
-            
-            # Clear existing search results
-            if hasattr(self.search_ui, 'searchResultsContentLayout'):
-                # Clear all existing result widgets
-                for i in reversed(range(self.search_ui.searchResultsContentLayout.count())):
-                    child = self.search_ui.searchResultsContentLayout.itemAt(i).widget()
-                    if child:
-                        child.setParent(None)
-            
-            # Display search results
-            if search_results:
-                for date, title, category in search_results:
-                    self.add_search_result_to_ui(date, title, category)
-                
-                # Update search results title
-                if hasattr(self.search_ui, 'labelSearchResults'):
-                    self.search_ui.labelSearchResults.setText(f"Search Results ({len(search_results)} found)")
-            else:
-                # No results found
-                if hasattr(self.search_ui, 'labelSearchResults'):
-                    self.search_ui.labelSearchResults.setText("Search Results (0 found)")
-                
-                # Add "no results" message
-                no_results_widget = QtWidgets.QLabel("No events found matching your search.")
-                no_results_widget.setStyleSheet("""
-                    QLabel {
-                        color: #666;
-                        font-style: italic;
-                        padding: 20px;
-                        text-align: center;
-                    }
-                """)
-                no_results_widget.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-                self.search_ui.searchResultsContentLayout.addWidget(no_results_widget)
-            
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            QMessageBox.critical(self, "Error", f"Search execution failed: {str(e)}")
 
     def search_events(self, search_query):
         """ADDED: Search through events in event manager"""

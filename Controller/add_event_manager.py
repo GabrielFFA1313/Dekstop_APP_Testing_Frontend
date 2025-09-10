@@ -4,8 +4,8 @@ from PyQt6.QtCore import QDate, QTime, Qt, QTimer
 from PyQt6 import QtWidgets, QtGui, QtCore
 from datetime import datetime, time
 
-from add_event import Ui_MainWindow as AddEventUi
-from edit_event import Ui_MainWindow as EditEventUi
+from UI.add_event import Ui_MainWindow as AddEventUi
+from UI.edit_event import Ui_MainWindow as EditEventUi
 
 
 class AddEventManager:

@@ -1,9 +1,9 @@
-# ADD_EVENT.py - Add Event UI
+# EDIT_EVENT.py - Edit Event UI
 import sys
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QApplication, QMainWindow, QDateEdit, QTimeEdit, QTextEdit
 from PyQt6.QtCore import Qt, QDate, QTime
-from base_ui import BaseUi
+from .base_ui import BaseUi
 
 class Ui_MainWindow(BaseUi):
 
@@ -14,15 +14,15 @@ class Ui_MainWindow(BaseUi):
         # Store reference to MainWindow for navigation
         self.main_window = MainWindow
         
-        # Now add the specific content for this page - the Add Event Form
-        self.setup_add_event_section()
+        # Now add the specific content for this page - the Edit Event Form
+        self.setup_edit_event_section()
         
         # Connect UI elements and set translations
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-    def setup_add_event_section(self):
-        """Setup the add event form section - RESPONSIVE FOR ALL SCREEN SIZES"""
+    def setup_edit_event_section(self):
+        """Setup the edit event form section - RESPONSIVE FOR ALL SCREEN SIZES"""
         # Create a scroll area for better handling of different screen sizes
         self.scrollArea = QtWidgets.QScrollArea()
         self.scrollArea.setWidgetResizable(True)
@@ -36,14 +36,14 @@ class Ui_MainWindow(BaseUi):
         self.scrollLayout.setContentsMargins(20, 20, 20, 20)
         self.scrollLayout.setSpacing(15)
         
-        # Add Event Form Container - RESPONSIVE SIZING
-        self.addEventContainer = QtWidgets.QFrame()
-        self.addEventContainer.setMinimumWidth(500)
-        self.addEventContainer.setMaximumWidth(1200)  # Allow it to grow larger
-        self.addEventContainer.setObjectName("addEventContainer")
-        self.addEventContainer.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Preferred)
-        self.addEventContainer.setStyleSheet("""
-            QFrame#addEventContainer {
+        # Edit Event Form Container - RESPONSIVE SIZING
+        self.editEventContainer = QtWidgets.QFrame()
+        self.editEventContainer.setMinimumWidth(500)
+        self.editEventContainer.setMaximumWidth(1200)  # Allow it to grow larger
+        self.editEventContainer.setObjectName("editEventContainer")
+        self.editEventContainer.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Preferred)
+        self.editEventContainer.setStyleSheet("""
+            QFrame#editEventContainer {
                 background-color: white;
                 border: 2px solid #084924;
                 border-radius: 12px;
@@ -51,9 +51,9 @@ class Ui_MainWindow(BaseUi):
             }
         """)
         
-        self.addEventLayout = QtWidgets.QVBoxLayout(self.addEventContainer)
-        self.addEventLayout.setContentsMargins(20, 20, 20, 20)
-        self.addEventLayout.setSpacing(15)
+        self.editEventLayout = QtWidgets.QVBoxLayout(self.editEventContainer)
+        self.editEventLayout.setContentsMargins(20, 20, 20, 20)
+        self.editEventLayout.setSpacing(15)
         
         # Header with back arrow and title
         self.setup_header()
@@ -68,7 +68,7 @@ class Ui_MainWindow(BaseUi):
         self.setup_action_buttons()
         
         # Add the form to the scroll layout
-        self.scrollLayout.addWidget(self.addEventContainer, 0, Qt.AlignmentFlag.AlignCenter)
+        self.scrollLayout.addWidget(self.editEventContainer, 0, Qt.AlignmentFlag.AlignCenter)
         self.scrollLayout.addStretch()
         
         # Set the scroll widget
@@ -94,7 +94,7 @@ class Ui_MainWindow(BaseUi):
         self.headerLayout = QtWidgets.QHBoxLayout(self.headerContainer)
         
         # Back button
-        self.btnBack = QtWidgets.QPushButton("← Add Event")
+        self.btnBack = QtWidgets.QPushButton("← Edit Event")
         self.btnBack.setStyleSheet("""
             QPushButton {
                 background-color: transparent;
@@ -184,7 +184,7 @@ class Ui_MainWindow(BaseUi):
         self.headerLayout.addWidget(self.btnSearch)
         
         # Add the header container to the main layout
-        self.addEventLayout.addWidget(self.headerContainer)
+        self.editEventLayout.addWidget(self.headerContainer)
 
     def setup_event_form(self):
         """Setup the event form fields - RESPONSIVE GRID LAYOUT"""
@@ -414,7 +414,7 @@ class Ui_MainWindow(BaseUi):
         self.formLayout.addWidget(self.endTimeWidget, row, 3)
         
         # Add the form container to the main layout
-        self.addEventLayout.addWidget(self.formContainer)
+        self.editEventLayout.addWidget(self.formContainer)
 
     def setup_user_selection(self):
         """Setup user type selection checkboxes"""
@@ -487,10 +487,10 @@ class Ui_MainWindow(BaseUi):
         self.userContainerLayout.addLayout(self.userSelectionLayout)
         
         # Add the user selection container to main layout
-        self.addEventLayout.addWidget(self.userSelectionContainer)
+        self.editEventLayout.addWidget(self.userSelectionContainer)
 
     def setup_action_buttons(self):
-        """Setup the save and cancel buttons"""
+        """Setup the update and cancel buttons"""
         self.actionButtonsLayout = QtWidgets.QHBoxLayout()
         self.actionButtonsLayout.addStretch()
         
@@ -513,10 +513,10 @@ class Ui_MainWindow(BaseUi):
         self.btnCancel.clicked.connect(self.cancel_event)
         self.actionButtonsLayout.addWidget(self.btnCancel)
         
-        # Save button
-        self.btnSave = QtWidgets.QPushButton("Save")
-        self.btnSave.setFixedSize(100, 35)
-        self.btnSave.setStyleSheet("""
+        # Update button (changed from Save)
+        self.btnUpdate = QtWidgets.QPushButton("Update")
+        self.btnUpdate.setFixedSize(100, 35)
+        self.btnUpdate.setStyleSheet("""
             QPushButton {
                 background-color: #084924;
                 color: white;
@@ -529,10 +529,10 @@ class Ui_MainWindow(BaseUi):
                 background-color: #0a5228;
             }
         """)
-        self.btnSave.clicked.connect(self.save_event)
-        self.actionButtonsLayout.addWidget(self.btnSave)
+        self.btnUpdate.clicked.connect(self.update_event)
+        self.actionButtonsLayout.addWidget(self.btnUpdate)
         
-        self.addEventLayout.addLayout(self.actionButtonsLayout)
+        self.editEventLayout.addLayout(self.actionButtonsLayout)
 
     def set_am_pm(self, selected_btn, other_btn):
         """Handle AM/PM button selection"""
@@ -546,8 +546,8 @@ class Ui_MainWindow(BaseUi):
         self.checkFaculty.setChecked(is_checked)
         self.checkOrgOfficer.setChecked(is_checked)
 
-    def save_event(self):
-        """Handle save event action"""
+    def update_event(self):
+        """Handle update event action"""
         # Get form data
         event_title = self.inputEventTitle.text()
         event_type = self.comboEventType.currentText()
@@ -568,43 +568,31 @@ class Ui_MainWindow(BaseUi):
             )
             return
         
-        # Here you would save the event data
+        # Here you would update the event data
         # For now, just show a success message
         QtWidgets.QMessageBox.information(
             self.main_window,
             "Success",
-            f"Event '{event_title}' has been saved successfully!"
+            f"Event '{event_title}' has been updated successfully!"
         )
-        
-        # Clear form
-        self.clear_form()
 
     def cancel_event(self):
         """Handle cancel action"""
-        self.clear_form()
+        # Could go back to previous view or clear form
+        pass
 
-    def clear_form(self):
-        """Clear all form fields"""
-        self.inputEventTitle.clear()
-        self.inputDescription.clear()
-        self.inputLocation.clear()
-        self.comboEventType.setCurrentIndex(0)
-        self.dateStart.setDate(QDate.currentDate())
-        self.dateEnd.setDate(QDate.currentDate())
-        self.timeStart.setTime(QTime(9, 0))
-        self.timeEnd.setTime(QTime(17, 0))
-        
-        # Reset AM/PM buttons
-        self.btnStartAM.setChecked(True)
-        self.btnStartPM.setChecked(False)
-        self.btnEndAM.setChecked(False)
-        self.btnEndPM.setChecked(True)
-        
-        # Reset checkboxes
-        self.checkStudents.setChecked(False)
-        self.checkFaculty.setChecked(False)
-        self.checkOrgOfficer.setChecked(False)
-        self.checkAll.setChecked(False)
+    def populate_event_data(self, event_data):
+        """Populate form fields with existing event data"""
+        if event_data:
+            self.inputEventTitle.setText(event_data.get('title', ''))
+            self.inputDescription.setPlainText(event_data.get('description', ''))
+            self.inputLocation.setText(event_data.get('location', ''))
+            
+            # Set event type
+            event_type = event_data.get('type', '')
+            index = self.comboEventType.findText(event_type)
+            if index >= 0:
+                self.comboEventType.setCurrentIndex(index)
 
     def go_back_to_calendar(self):
         """Navigate back to calendar view"""
@@ -616,13 +604,13 @@ class Ui_MainWindow(BaseUi):
         _translate = QtCore.QCoreApplication.translate
         
         # Set title based on role using the base class method
-        title = self.get_title_for_role("Add Event")
+        title = self.get_title_for_role("Edit Event")
         if hasattr(self, 'labelTitle'):
             self.labelTitle.setText(_translate("MainWindow", title))
 
 
-class AddEventApp(QMainWindow):
-    """Standalone application class for add event window (for testing)"""
+class EditEventApp(QMainWindow):
+    """Standalone application class for edit event window (for testing)"""
     
     def __init__(self, user_role="admin"):
         super().__init__()
@@ -640,7 +628,7 @@ class AddEventApp(QMainWindow):
         self.resize(1200, 800)
         
         # Set window title
-        self.setWindowTitle(f"CISC Calendar - Add Event ({self.user_role.title()})")
+        self.setWindowTitle(f"CISC Calendar - Edit Event ({self.user_role.title()})")
 
 
 if __name__ == "__main__":

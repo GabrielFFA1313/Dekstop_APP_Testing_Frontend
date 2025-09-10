@@ -4,7 +4,7 @@ from PyQt6.QtCore import QDate, QTimer, Qt
 from PyQt6 import QtWidgets, QtGui, QtCore
 from datetime import datetime
 
-from day_view import DayViewUi
+from UI.day_view import DayViewUi
 
 
 class DayViewManager:

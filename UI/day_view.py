@@ -1,6 +1,6 @@
 # day_view.py
 from PyQt6 import QtCore, QtGui, QtWidgets
-from base_ui import BaseUi
+from .base_ui import BaseUi
 from datetime import datetime, timedelta
 
 class DayViewUi(BaseUi):

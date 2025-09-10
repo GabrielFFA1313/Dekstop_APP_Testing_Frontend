@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import QMessageBox, QWidget, QHBoxLayout, QPushButton
 from PyQt6.QtCore import QDate, QTimer, Qt
 from PyQt6 import QtWidgets, QtGui, QtCore
 
-from activities import Ui_MainWindow
+from UI.activities import Ui_MainWindow
 
 
 class ActivitiesManager:
