@@ -460,7 +460,7 @@ class ActivitiesManager:
                 return
             
             # Get upcoming events from event manager
-            upcoming_events = self.event_manager.get_upcoming_events("All", limit=20)
+            upcoming_events = self.event_manager.get_upcoming_events("All", limit=10)
             
             # Clear the existing list
             self.activities_ui.listUpcoming.clear()
@@ -504,7 +504,7 @@ class ActivitiesManager:
             }
             
             filter_category = filter_map.get(filter_text, "All")
-            upcoming_events = self.event_manager.get_upcoming_events(filter_category, limit=20)
+            upcoming_events = self.event_manager.get_upcoming_events(filter_category, limit=10)
             
             # Clear and repopulate the list
             self.activities_ui.listUpcoming.clear()

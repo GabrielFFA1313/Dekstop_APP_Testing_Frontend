@@ -242,7 +242,7 @@ class MainApplication(QMainWindow):
             traceback.print_exc()
 
     def filter_upcoming_events_search(self, filter_text):
-        """ADDED: Filter upcoming events in search view"""
+        """ADDED: Filter upcoming events in search view - FIXED: Now limits to 10 events"""
         try:
             if self.current_view != "search" or not self.search_ui:
                 return
@@ -260,28 +260,30 @@ class MainApplication(QMainWindow):
             }
             
             filter_category = filter_map.get(filter_text, "All")
-            upcoming_events = self.event_manager.get_upcoming_events(filter_category, limit=None)
+            upcoming_events = self.event_manager.get_upcoming_events(filter_category, limit=10)
             
             # Clear the existing list
             self.search_ui.listUpcoming.clear()
             
-            # Add filtered events to the list
-            for date, title, category in upcoming_events:
-                formatted_date = date.toString("MMM dd, yyyy")
+            if upcoming_events:
+                # Manually limit to 10 events as a safety measure
+                limited_events = upcoming_events[:10]
                 
-                icon_map = {
-                    "Academic": "🟢",
-                    "Organizational": "🔵", 
-                    "Deadline": "🟠",
-                    "Holiday": "🔴"
-                }
-                icon = icon_map.get(category, "⚪")
-                
-                item_text = f"{icon} {title}\n     {formatted_date}"
-                item = QtWidgets.QListWidgetItem(item_text)
-                self.search_ui.listUpcoming.addItem(item)
-            
-            print(f"Filtered upcoming events in search view: {filter_category} ({len(upcoming_events)} events)")
+                # Add filtered events to the list
+                for date, title, category in limited_events:
+                    formatted_date = date.toString("MMM dd, yyyy")
+                    
+                    icon_map = {
+                        "Academic": "🟢",
+                        "Organizational": "🔵", 
+                        "Deadline": "🟠",
+                        "Holiday": "🔴"
+                    }
+                    icon = icon_map.get(category, "⚪")
+                    
+                    item_text = f"{icon} {title}\n     {formatted_date}"
+                    item = QtWidgets.QListWidgetItem(item_text)
+                    self.search_ui.listUpcoming.addItem(item)
             
         except Exception as e:
             import traceback
@@ -295,14 +297,13 @@ class MainApplication(QMainWindow):
             
             # Use the inherited listUpcoming widget from BaseUi, not the search results area
             if not hasattr(self.search_ui, 'listUpcoming'):
-                print("Warning: listUpcoming widget not found in search UI")
                 return
             
             # Clear the existing upcoming events list
             self.search_ui.listUpcoming.clear()
             
-            # Get upcoming events from event manager
-            upcoming_events = self.event_manager.get_upcoming_events(limit=None)  # Get all upcoming events
+            # Get upcoming events from event manager (limited to 10 events)
+            upcoming_events = self.event_manager.get_upcoming_events(limit=10)
             
             if upcoming_events:
                 # Add events to the upcoming events list (same format as calendar view)
@@ -321,12 +322,9 @@ class MainApplication(QMainWindow):
                     item = QtWidgets.QListWidgetItem(item_text)
                     self.search_ui.listUpcoming.addItem(item)
             
-            print(f"Populated {len(upcoming_events) if upcoming_events else 0} events in search view upcoming list")
-            
         except Exception as e:
             import traceback
             traceback.print_exc()
-            print(f"Error populating upcoming events in search view: {e}")
 
     def clear_search_results_only(self):
         """ADDED: Method to clear only the search results area, not upcoming events"""
@@ -579,8 +577,8 @@ class MainApplication(QMainWindow):
             if not hasattr(self.calendar_ui, 'listUpcoming'):
                 return
             
-            # Get upcoming events from event manager
-            upcoming_events = self.event_manager.get_upcoming_events(limit=None)
+            # Get upcoming events from event manager (limited to 10 events for better performance)
+            upcoming_events = self.event_manager.get_upcoming_events(limit=10)
             
             # Clear the existing list
             self.calendar_ui.listUpcoming.clear()
@@ -616,7 +614,7 @@ class MainApplication(QMainWindow):
         elif self.current_view == "add_event":
             # No refresh needed for add event view
             pass
-        elif self.current_view == "search":  # FIXED: Handle search view properly
+        elif self.current_view == "search":  
             # Refresh upcoming events in search view
             self.populate_upcoming_events_search()
 

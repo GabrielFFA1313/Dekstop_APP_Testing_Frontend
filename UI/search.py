@@ -1,6 +1,9 @@
 # SEARCH
 from PyQt6 import QtCore, QtGui, QtWidgets
-from .base_ui import BaseUi
+try:
+    from .base_ui import BaseUi
+except ImportError:
+    from base_ui import BaseUi
 
 class SearchUi(BaseUi):
     """Search UI class that extends BaseUi with search results functionality"""
@@ -20,7 +23,7 @@ class SearchUi(BaseUi):
     def setup_search_results_panel(self):
         """Setup the search results panel on the right side - now takes full width"""
         # FIXED: Set contentLayout properties to eliminate gray background
-        self.contentLayout.setSpacing(0)  # Remove spacing between upcoming events and search results
+        self.contentLayout.setSpacing(0)  
         self.contentLayout.setContentsMargins(0, 0, 0, 0)  # Remove margins
         
         # FIXED: Set the parent widget background to white to eliminate gray
@@ -68,22 +71,22 @@ class SearchUi(BaseUi):
         self.searchResultsHeader.addWidget(self.btnBack)
         
         # Search Results Title - REDUCED FONT SIZE TO MATCH CALENDAR
-        self.labelSearchResults = QtWidgets.QLabel("Upcoming Events")
+        self.labelSearchResults = QtWidgets.QLabel("Search Events")
         self.labelSearchResults.setStyleSheet("font-size: 14px; font-weight: bold; color: #084924; margin-left: 15px;")  # REDUCED from 18px
         self.searchResultsHeader.addWidget(self.labelSearchResults)
         
         self.searchResultsHeader.addStretch()
         
-        # View Events Dropdown - MATCHED TO CALENDAR STYLING
-        self.comboViewEvents = QtWidgets.QComboBox()
-        self.comboViewEvents.setStyleSheet("""
+        # Semester Dropdown - CHANGED FROM "View Events" TO "Semester"
+        self.comboSemester = QtWidgets.QComboBox()
+        self.comboSemester.setStyleSheet("""
             QComboBox {
                 border: 1px solid #ccc;
                 border-radius: 4px;
                 padding: 6px 12px;
                 background-color: #084924;
                 color: white;
-                min-width: 100px;
+                min-width: 120px;
                 font-size: 12px;
                 font-weight: bold;
             }
@@ -107,33 +110,11 @@ class SearchUi(BaseUi):
                 color: #084924;
             }
         """)
-        self.comboViewEvents.addItems(["View Events"])
-        self.comboViewEvents.setCurrentText("View Events")
-        self.searchResultsHeader.addWidget(self.comboViewEvents)
+        self.comboSemester.addItems(["1st Semester", "2nd Semester", "Mid year"])
+        self.comboSemester.setCurrentText("1st Semester")
+        self.searchResultsHeader.addWidget(self.comboSemester)
         
-        # Search Bar beside View Events button - MATCHED TO CALENDAR SIZE
-        self.searchBarResults = QtWidgets.QLineEdit()
-        self.searchBarResults.setFixedWidth(200)  # SAME AS CALENDAR
-        self.searchBarResults.setPlaceholderText("Search events...")
-        self.searchBarResults.setStyleSheet("""
-            QLineEdit {
-                border: 1px solid #ccc;
-                border-radius: 4px;
-                padding: 8px 12px;
-                background-color: white;
-                font-size: 12px;
-            }
-            QLineEdit:focus {
-                border-color: #FDC601;
-                outline: none;
-            }
-            QLineEdit::placeholder {
-                color: #999;
-            }
-        """)
-        self.searchResultsHeader.addWidget(self.searchBarResults)
-        
-        # View Dropdown - MATCHED TO CALENDAR STYLING
+        # View Dropdown - UPDATED WITH "Day" AND "Month"
         self.comboView = QtWidgets.QComboBox()
         self.comboView.setStyleSheet("""
             QComboBox {
@@ -166,12 +147,34 @@ class SearchUi(BaseUi):
                 color: #084924;
             }
         """)
-        self.comboView.addItems(["View"])
-        self.comboView.setCurrentText("View")
+        self.comboView.addItems(["Month", "Day"])
+        self.comboView.setCurrentText("Month")
         self.searchResultsHeader.addWidget(self.comboView)
         
-        # Search Button - MATCHED TO CALENDAR STYLING
-        self.btnSearch = QtWidgets.QPushButton("🔍 Search")
+        # Search Bar beside Search Button - MATCHED TO CALENDAR SIZE
+        self.searchBarResults = QtWidgets.QLineEdit()
+        self.searchBarResults.setFixedWidth(200)  # SAME AS CALENDAR
+        self.searchBarResults.setPlaceholderText("Search events...")
+        self.searchBarResults.setStyleSheet("""
+            QLineEdit {
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                padding: 8px 12px;
+                background-color: white;
+                font-size: 12px;
+            }
+            QLineEdit:focus {
+                border-color: #FDC601;
+                outline: none;
+            }
+            QLineEdit::placeholder {
+                color: #999;
+            }
+        """)
+        self.searchResultsHeader.addWidget(self.searchBarResults)
+        
+        # Search Button - MATCHED TO CALENDAR STYLING AND POSITIONED BESIDE SEARCH BAR
+        self.btnSearch = QtWidgets.QPushButton("Search")
         self.btnSearch.setStyleSheet("""
             QPushButton {
                 background-color: #f8f9fa;
@@ -245,7 +248,7 @@ class SearchUi(BaseUi):
         self.searchResultsContentLayout.setContentsMargins(10, 10, 10, 10)  # SLIGHTLY REDUCED
         self.searchResultsContentLayout.setSpacing(8)  # SLIGHTLY INCREASED FOR READABILITY
         
-        # DEBUG: Add a test label to verify layout is working
+        # Add a test label to verify layout is working
         test_label = QtWidgets.QLabel("Loading events...")
         test_label.setStyleSheet("color: #999; padding: 20px; text-align: center;")
         test_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
@@ -256,9 +259,6 @@ class SearchUi(BaseUi):
         
         # Add search results container to content layout
         self.contentLayout.addWidget(self.searchResultsContainer)
-        
-        print(f"Search results panel setup completed. Layout object: {self.searchResultsContentLayout}")
-        print(f"Content widget set in scroll area: {self.searchResultsContent}")
 
     def clear_search_results(self):
         """Clear all search results from the display"""
