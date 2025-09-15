@@ -655,7 +655,7 @@ def main():
     
     # Create and show main window with Calendar UI
     # NOTE roles (Admin)(Organization)(Faculty)(Student)
-    main_window = MainApplication(user_role="Student")
+    main_window = MainApplication(user_role="Admin")
     main_window.setWindowTitle("Campus Event Manager")
     main_window.show()
     

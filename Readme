@@ -1,0 +1,13 @@
+Controllers - All the logic Files and the connection of each components of the UI
+
+
+Mock - Mocks or example events that will be used by the Controllers
+
+UI - All the layout files of the application some have thier own controller some share it
+
+
+TODO
+- Database paging
+- Edit
+- Add
+- Delete
