@@ -154,7 +154,7 @@ class DayViewManager:
         except Exception as e:
             import traceback
             traceback.print_exc()
-
+    #FIX should have different times not fixee
     def get_default_hour_for_category(self, category):
         """Get default hour for event category"""
         hour_map = {
@@ -171,7 +171,7 @@ class DayViewManager:
             if not hasattr(self.day_view_ui, 'dayCalendarWidget'):
                 return
             
-            # Calculate which time slot index this hour corresponds to
+           
             start_hour = 7  # Day view starts at 7 AM
             if hour < start_hour or hour > 19:  # Day view ends at 7 PM
                 return

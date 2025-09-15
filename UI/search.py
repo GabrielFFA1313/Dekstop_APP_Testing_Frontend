@@ -1,7 +1,8 @@
 # SEARCH
 from PyQt6 import QtCore, QtGui, QtWidgets
+# Error handling to be able to run it both in layout file itself and in main
 try:
-    from .base_ui import BaseUi
+    from .base_ui import BaseUi 
 except ImportError:
     from base_ui import BaseUi
 

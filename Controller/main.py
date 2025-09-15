@@ -31,9 +31,12 @@ class MainApplication(QMainWindow):
         # Initialize event manager
         self.event_manager = EventManager(main_app=self)
         
-        # Initialize view managers
+        #NOTE  Initialize view managers
+#       activities.py
         self.activities_manager = ActivitiesManager(self, self.event_manager)
+#       day_view.py
         self.day_view_manager = DayViewManager(self, self.event_manager)
+#       add_event or edit_event.py
         self.add_event_manager = AddEventManager(self, self.event_manager)
         
         # Initialize UI references
@@ -105,7 +108,7 @@ class MainApplication(QMainWindow):
                     pass
                 self.calendar_ui.btnviewEvent.clicked.connect(self.show_activities_view)
             
-            # ADDED: Connect calendar search bar to search functionality
+            #  Connect calendar search bar to search functionality
             if hasattr(self.calendar_ui, 'searchBarCalendar'):
                 try:
                     self.calendar_ui.searchBarCalendar.returnPressed.disconnect()
@@ -113,7 +116,7 @@ class MainApplication(QMainWindow):
                     pass
                 self.calendar_ui.searchBarCalendar.returnPressed.connect(self.perform_search)
             
-            # ADDED: Connect top search bar to search functionality
+            # Connect top search bar to search functionality
             if hasattr(self.calendar_ui, 'searchBarTop'):
                 try:
                     self.calendar_ui.searchBarTop.returnPressed.disconnect()
@@ -134,7 +137,7 @@ class MainApplication(QMainWindow):
             traceback.print_exc()
 
     def perform_search(self):
-        """ADDED: Perform search based on search bar input"""
+        """ Perform search based on search bar input"""
         try:
             search_query = ""
             
@@ -156,7 +159,7 @@ class MainApplication(QMainWindow):
             QMessageBox.critical(self, "Error", f"Search failed: {str(e)}")
 
     def show_search_view(self, search_query=""):
-        """ADDED: Switch to search view and perform search"""
+        """ Switch to search view and perform search"""
         try:
             # Store current geometry
             geometry = self.geometry()
@@ -192,12 +195,12 @@ class MainApplication(QMainWindow):
             QMessageBox.critical(self, "Error", f"Could not switch to search view: {str(e)}")
 
     def setup_search_connections(self):
-        """ADDED: Setup search-specific connections"""
+        """ Setup search-specific connections"""
         try:
             if not self.search_ui:
                 return
             
-            # FIXED: Connect back button to return to calendar
+            # Connect back button to return to calendar
             if hasattr(self.search_ui, 'btnBack'):
                 try:
                     self.search_ui.btnBack.clicked.disconnect()
@@ -229,7 +232,7 @@ class MainApplication(QMainWindow):
                     pass
                 self.search_ui.searchBarTop.returnPressed.connect(self.execute_search_from_top_bar)
             
-            # ADDED: Connect filter dropdown for search view
+            # Connect filter dropdown for search view
             if hasattr(self.search_ui, 'comboUpcomingFilter'):
                 try:
                     self.search_ui.comboUpcomingFilter.currentTextChanged.disconnect()
@@ -242,7 +245,7 @@ class MainApplication(QMainWindow):
             traceback.print_exc()
 
     def filter_upcoming_events_search(self, filter_text):
-        """ADDED: Filter upcoming events in search view - FIXED: Now limits to 10 events"""
+        """ Filter upcoming events in search view - FIXED: Now limits to 10 events"""
         try:
             if self.current_view != "search" or not self.search_ui:
                 return
@@ -290,7 +293,7 @@ class MainApplication(QMainWindow):
             traceback.print_exc()
 
     def populate_upcoming_events_search(self):
-        """FIXED: Populate upcoming events in search view using the proper listUpcoming widget"""
+        """ Populate upcoming events in search view using the proper listUpcoming widget"""
         try:
             if not self.search_ui:
                 return
@@ -327,7 +330,7 @@ class MainApplication(QMainWindow):
             traceback.print_exc()
 
     def clear_search_results_only(self):
-        """ADDED: Method to clear only the search results area, not upcoming events"""
+        """ Method to clear only the search results area, not upcoming events"""
         try:
             if not self.search_ui:
                 return
@@ -364,7 +367,7 @@ class MainApplication(QMainWindow):
                 if hasattr(self.search_ui, 'labelSearchResults'):
                     self.search_ui.labelSearchResults.setText(f"Search Results ({len(search_results)} found)")
             else:
-                # No results found
+                # if No results found
                 if hasattr(self.search_ui, 'labelSearchResults'):
                     self.search_ui.labelSearchResults.setText("Search Results (0 found)")
                 
@@ -611,9 +614,6 @@ class MainApplication(QMainWindow):
             self.day_view_manager.refresh_day_view()
         elif self.current_view == "activities":
             self.activities_manager.refresh_activities()
-        elif self.current_view == "add_event":
-            # No refresh needed for add event view
-            pass
         elif self.current_view == "search":  
             # Refresh upcoming events in search view
             self.populate_upcoming_events_search()

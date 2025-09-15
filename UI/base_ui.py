@@ -214,22 +214,22 @@ class BaseUi(object):
         # Stretch to push search bar to the right
         self.topLayout.addStretch()
 
-        # Search bar
-        self.searchBarTop = QtWidgets.QLineEdit()
-        self.searchBarTop.setFixedWidth(200)
-        self.searchBarTop.setPlaceholderText("Search Here")
-        self.searchBarTop.setStyleSheet("""
-            QLineEdit {
-                border: 1px solid #ccc;
-                border-radius: 4px;
-                padding: 4px;
-                background-color: white;
-            }
-            QLineEdit:focus {
-                border-color: #FDC601;
-            }
-        """)
-        self.topLayout.addWidget(self.searchBarTop)
+        # # Search bar
+        # self.searchBarTop = QtWidgets.QLineEdit()
+        # self.searchBarTop.setFixedWidth(200)
+        # self.searchBarTop.setPlaceholderText("Search Here")
+        # self.searchBarTop.setStyleSheet("""
+        #     QLineEdit {
+        #         border: 1px solid #ccc;
+        #         border-radius: 4px;
+        #         padding: 4px;
+        #         background-color: white;
+        #     }
+        #     QLineEdit:focus {
+        #         border-color: #FDC601;
+        #     }
+        # """)
+        # self.topLayout.addWidget(self.searchBarTop)
 
         self.rightContainer.addWidget(self.topTitleBar)
 
@@ -298,17 +298,18 @@ class BaseUi(object):
         self.labelUpcoming.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.upcomingLayout.addWidget(self.labelUpcoming)
 
-        # Legend
+        # Legend 
         self.legendLayout = QtWidgets.QHBoxLayout()
-        self.legendLayout.setSpacing(20)
+        self.legendLayout.setSpacing(8)  # Reduced from 20 to 8
         
         legend_style = """
             QLabel {
-                padding: 4px 8px;
-                border-radius: 4px;
+                padding: 3px 6px;
+                border-radius: 3px;
                 background-color: #f8f9fa;
                 border: 1px solid #e9ecef;
-                font-size: 12px;
+                font-size: 11px;
+                font-weight: 500;
             }
         """
         

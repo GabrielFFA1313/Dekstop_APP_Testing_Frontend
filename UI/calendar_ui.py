@@ -1,7 +1,11 @@
 # CALENDAR UI FILE
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
-from .base_ui import BaseUi
+# Error handling to be able to run it both in layout file itself and in main
+try:
+    from .base_ui import BaseUi 
+except ImportError:
+    from base_ui import BaseUi
 
 class CalendarUi(BaseUi):
     """Calendar UI that inherits from BaseUi for consistent layout"""

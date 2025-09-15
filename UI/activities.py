@@ -1,9 +1,14 @@
 # ACTIVITIES.py - UI Only Version
 import sys
 from PyQt6 import QtCore, QtGui, QtWidgets
-from PyQt6.QtWidgets import QHeaderView, QTableWidget, QTableWidgetItem, QApplication, QMainWindow
+from PyQt6.QtWidgets import QHeaderView, QTableWidget, QTableWidgetItem, QApplication, QMainWindow, QWidget, QHBoxLayout, QPushButton
 from PyQt6.QtCore import Qt, QDate
-from .base_ui import BaseUi
+# Error handling to be able to run it both in layout file itself and in main
+try:
+    from .base_ui import BaseUi 
+except ImportError:
+    from base_ui import BaseUi
+
 
 class Ui_MainWindow(BaseUi):
 
@@ -336,6 +341,86 @@ class Ui_MainWindow(BaseUi):
         self.activitiesTable.setSortingEnabled(True)
         
         self.rightLayout.addWidget(self.activitiesTable)
+
+    def create_action_buttons(self, row, edit_callback=None, delete_callback=None):
+        """Create Edit/Delete action buttons for a table row (UI creation only)"""
+        # Check user role to determine if buttons should be created
+        if self.user_role.lower() not in ['admin', 'administrator', 'super_admin']:
+            return None
+        
+        # Create widget to hold buttons
+        button_widget = QWidget()
+        button_widget.setStyleSheet("background-color: white;")  # Ensure widget background is white
+        button_layout = QHBoxLayout(button_widget)
+        button_layout.setContentsMargins(5, 2, 5, 2)
+        button_layout.setSpacing(5)
+        
+        # Edit button
+        edit_btn = QPushButton("Edit")
+        edit_btn.setStyleSheet("""
+            QPushButton {
+                background-color: white;
+                color: #084924;
+                border: 1px solid #084924;
+                border-radius: 4px;
+                padding: 4px 8px;
+                font-weight: bold;
+                font-size: 10px;
+                min-width: 40px;
+            }
+            QPushButton:hover {
+                background-color: #f8f9fa;
+                border: 2px solid #084924;
+                color: #063018;
+            }
+            QPushButton:pressed {
+                background-color: #e9ecef;
+                color: #063018;
+            }
+        """)
+        
+        # Connect to callback if provided
+        if edit_callback:
+            edit_btn.clicked.connect(lambda: edit_callback(row))
+        
+        # Delete button
+        delete_btn = QPushButton("Delete")
+        delete_btn.setStyleSheet("""
+            QPushButton {
+                background-color: white;
+                color: #dc3545;
+                border: 1px solid #dc3545;
+                border-radius: 4px;
+                padding: 4px 8px;
+                font-weight: bold;
+                font-size: 10px;
+                min-width: 40px;
+            }
+            QPushButton:hover {
+                background-color: #f8f9fa;
+                border: 2px solid #dc3545;
+                color: #c82333;
+            }
+            QPushButton:pressed {
+                background-color: #e9ecef;
+                color: #a71e2a;
+            }
+        """)
+        
+        # Connect to callback if provided
+        if delete_callback:
+            delete_btn.clicked.connect(lambda: delete_callback(row))
+        
+        # Add buttons to layout
+        button_layout.addWidget(edit_btn)
+        button_layout.addWidget(delete_btn)
+        button_layout.addStretch()
+        
+        return button_widget
+
+    def can_show_action_buttons(self):
+        """Check if action buttons should be shown based on user role"""
+        return self.user_role.lower() in ['admin', 'administrator', 'super_admin']
 
     def retranslateUi(self, MainWindow):
         """Set text for UI elements"""

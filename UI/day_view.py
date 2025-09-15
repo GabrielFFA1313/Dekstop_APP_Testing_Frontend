@@ -1,6 +1,11 @@
 # day_view.py
 from PyQt6 import QtCore, QtGui, QtWidgets
-from .base_ui import BaseUi
+# Error handling to be able to run it both in layout file itself and in main
+try:
+    from .base_ui import BaseUi 
+except ImportError:
+    from base_ui import BaseUi
+
 from datetime import datetime, timedelta
 
 class DayViewUi(BaseUi):
@@ -167,11 +172,11 @@ class DayViewUi(BaseUi):
         
         self.dayViewLayout.addLayout(self.navButtonsLayout)
         
-        # Today button (separate row)
-        self.btnToday = QtWidgets.QPushButton("Today")
+        # Today button
+        self.btnToday = QtWidgets.QPushButton("Date Today")
         self.btnToday.setStyleSheet("""
             QPushButton {
-                background-color: #FDC601;
+                background-color: #084924;
                 color: white;
                 border: none;
                 border-radius: 4px;
@@ -181,7 +186,7 @@ class DayViewUi(BaseUi):
                 margin-top: 5px;
             }
             QPushButton:hover {
-                background-color: #084924;
+                background-color: #FDC601;
             }
         """)
         

@@ -3,7 +3,12 @@ import sys
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QApplication, QMainWindow, QDateEdit, QTimeEdit, QTextEdit
 from PyQt6.QtCore import Qt, QDate, QTime
-from .base_ui import BaseUi
+# Error handling to be able to run it both in layout file itself and in main
+try:
+    from .base_ui import BaseUi 
+except ImportError:
+    from base_ui import BaseUi
+
 
 class Ui_MainWindow(BaseUi):
 

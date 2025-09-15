@@ -15,7 +15,7 @@ class AddEventManager:
         self.main_app = main_app
         self.event_manager = event_manager
         self.add_event_ui = None
-        self.mode = "add"  # "add" or "edit"
+        self.mode = "add"
         self.edit_event_data = None
 
     def setup_add_event_view(self):

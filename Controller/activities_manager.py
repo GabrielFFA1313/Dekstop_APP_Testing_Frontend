@@ -59,27 +59,46 @@ class ActivitiesManager:
             QMessageBox.critical(self.main_app, "Error", f"Could not setup activities view: {str(e)}")
 
     def update_table_headers(self):
-        """Update table headers to remove Status column"""
+        """Update table headers based on user role"""
         if hasattr(self.activities_ui, 'activitiesTable'):
-            # Update to 5 columns: Date & Time, Event, Type, Location, Actions
-            self.activities_ui.activitiesTable.setColumnCount(5)
-            headers = ["Date & Time", "Event", "Type", "Location", "Actions"]
-            self.activities_ui.activitiesTable.setHorizontalHeaderLabels(headers)
-            
-            # Set column widths to prevent Event column from being too wide
-            header = self.activities_ui.activitiesTable.horizontalHeader()
-            header.setSectionResizeMode(0, header.ResizeMode.Fixed)             # Date & Time - Fixed
-            header.setSectionResizeMode(1, header.ResizeMode.Fixed)             # Event - Fixed
-            header.setSectionResizeMode(2, header.ResizeMode.Fixed)             # Type - Fixed
-            header.setSectionResizeMode(3, header.ResizeMode.Fixed)             # Location - Fixed
-            header.setSectionResizeMode(4, header.ResizeMode.Fixed)             # Actions - Fixed
-            
-            # Set specific widths for all columns to fill the space properly
-            self.activities_ui.activitiesTable.setColumnWidth(0, 120)  # Date & Time
-            self.activities_ui.activitiesTable.setColumnWidth(1, 280)  # Event column 
-            self.activities_ui.activitiesTable.setColumnWidth(2, 120)  # Type
-            self.activities_ui.activitiesTable.setColumnWidth(3, 140)  # Location
-            self.activities_ui.activitiesTable.setColumnWidth(4, 160)  # Actions - wider to prevent cutoff
+            # Check if action buttons should be shown (using UI method)
+            if hasattr(self.activities_ui, 'can_show_action_buttons') and self.activities_ui.can_show_action_buttons():
+                # Show Actions column for admin users
+                self.activities_ui.activitiesTable.setColumnCount(5)
+                headers = ["Date & Time", "Event", "Type", "Location", "Actions"]
+                self.activities_ui.activitiesTable.setHorizontalHeaderLabels(headers)
+                
+                # Set column widths
+                header = self.activities_ui.activitiesTable.horizontalHeader()
+                header.setSectionResizeMode(0, header.ResizeMode.Fixed)             # Date & Time - Fixed
+                header.setSectionResizeMode(1, header.ResizeMode.Fixed)             # Event - Fixed
+                header.setSectionResizeMode(2, header.ResizeMode.Fixed)             # Type - Fixed
+                header.setSectionResizeMode(3, header.ResizeMode.Fixed)             # Location - Fixed
+                header.setSectionResizeMode(4, header.ResizeMode.Fixed)             # Actions - Fixed
+                
+                # Set specific widths for all columns
+                self.activities_ui.activitiesTable.setColumnWidth(0, 120)  # Date & Time
+                self.activities_ui.activitiesTable.setColumnWidth(1, 280)  # Event column 
+                self.activities_ui.activitiesTable.setColumnWidth(2, 120)  # Type
+                self.activities_ui.activitiesTable.setColumnWidth(3, 140)  # Location
+                self.activities_ui.activitiesTable.setColumnWidth(4, 160)  # Actions
+            else:
+                # Hide Actions column for student, org, faculty users
+                self.activities_ui.activitiesTable.setColumnCount(4)
+                headers = ["Date & Time", "Event", "Type", "Location"]
+                self.activities_ui.activitiesTable.setHorizontalHeaderLabels(headers)
+                
+                # Set column widths for 4-column layout
+                header = self.activities_ui.activitiesTable.horizontalHeader()
+                header.setSectionResizeMode(0, header.ResizeMode.Fixed)             # Date & Time - Fixed
+                header.setSectionResizeMode(1, header.ResizeMode.Stretch)           # Event - Stretch to fill
+                header.setSectionResizeMode(2, header.ResizeMode.Fixed)             # Type - Fixed
+                header.setSectionResizeMode(3, header.ResizeMode.Fixed)             # Location - Fixed
+                
+                # Set specific widths
+                self.activities_ui.activitiesTable.setColumnWidth(0, 120)  # Date & Time
+                self.activities_ui.activitiesTable.setColumnWidth(2, 120)  # Type
+                self.activities_ui.activitiesTable.setColumnWidth(3, 160)  # Location
 
     def setup_activities_connections(self):
         """Setup activities-specific connections"""
@@ -92,13 +111,17 @@ class ActivitiesManager:
                     pass
                 self.activities_ui.btnback.clicked.connect(self.go_back_to_calendar)
             
-            # Connect Add Event button - UPDATED TO USE EVENT FORM MANAGER
+            # Connect Add Event button - UPDATED TO ALLOW ORG AND FACULTY TO ADD EVENTS
             if hasattr(self.activities_ui, 'btnAddEvent'):
-                try:
-                    self.activities_ui.btnAddEvent.clicked.disconnect()
-                except:
-                    pass
-                self.activities_ui.btnAddEvent.clicked.connect(self.show_add_event)
+                if self.can_add_activities():
+                    try:
+                        self.activities_ui.btnAddEvent.clicked.disconnect()
+                    except:
+                        pass
+                    self.activities_ui.btnAddEvent.clicked.connect(self.show_add_event)
+                else:
+                    # Hide Add Event button for students only
+                    self.activities_ui.btnAddEvent.setVisible(False)
             
             # Connect activities table filter
             if hasattr(self.activities_ui, 'comboActivityType'):
@@ -185,71 +208,15 @@ class ActivitiesManager:
         }
         return time_map.get(category, "TBA")
 
-    def create_action_buttons(self, row):
-        """Create Edit/Delete action buttons for a table row"""
-        # Create widget to hold buttons
-        button_widget = QWidget()
-        button_widget.setStyleSheet("background-color: white;")  # Ensure widget background is white
-        button_layout = QHBoxLayout(button_widget)
-        button_layout.setContentsMargins(5, 2, 5, 2)
-        button_layout.setSpacing(5)
-        
-        # Edit button
-        edit_btn = QPushButton("Edit")
-        edit_btn.setStyleSheet("""
-            QPushButton {
-                background-color: white;
-                color: #084924;
-                border: 1px solid #084924;
-                border-radius: 4px;
-                padding: 4px 8px;
-                font-weight: bold;
-                font-size: 10px;
-                min-width: 40px;
-            }
-            QPushButton:hover {
-                background-color: #f8f9fa;
-                border: 2px solid #084924;
-                color: #063018;
-            }
-            QPushButton:pressed {
-                background-color: #e9ecef;
-                color: #063018;
-            }
-        """)
-        edit_btn.clicked.connect(lambda: self.edit_activity(row))
-        
-        # Delete button
-        delete_btn = QPushButton("Delete")
-        delete_btn.setStyleSheet("""
-            QPushButton {
-                background-color: white;
-                color: #dc3545;
-                border: 1px solid #dc3545;
-                border-radius: 4px;
-                padding: 4px 8px;
-                font-weight: bold;
-                font-size: 10px;
-                min-width: 40px;
-            }
-            QPushButton:hover {
-                background-color: #f8f9fa;
-                border: 2px solid #dc3545;
-                color: #c82333;
-            }
-            QPushButton:pressed {
-                background-color: #e9ecef;
-                color: #a71e2a;
-            }
-        """)
-        delete_btn.clicked.connect(lambda: self.delete_activity(row))
-        
-        # Add buttons to layout
-        button_layout.addWidget(edit_btn)
-        button_layout.addWidget(delete_btn)
-        button_layout.addStretch()
-        
-        return button_widget
+    def can_edit_activities(self):
+        """Check if current user can edit/delete activities"""
+        user_role = getattr(self.main_app, 'user_role', '').lower()
+        return user_role in ['admin', 'administrator', 'super_admin']
+    
+    def can_add_activities(self):
+        """Check if current user can add new activities"""
+        user_role = getattr(self.main_app, 'user_role', '').lower()
+        return user_role in ['admin', 'administrator', 'super_admin', 'org', 'faculty']
 
     def populate_activities_table(self, activities_list):
         """Populate the activities table with event data"""
@@ -264,6 +231,10 @@ class ActivitiesManager:
             
             # Set the number of rows
             table.setRowCount(len(activities_list))
+            
+            # Check if user can edit activities (using UI method)
+            show_actions = (hasattr(self.activities_ui, 'can_show_action_buttons') and 
+                          self.activities_ui.can_show_action_buttons())
             
             for row, activity in enumerate(activities_list):
                 # Date & Time
@@ -288,9 +259,15 @@ class ActivitiesManager:
                 location_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 table.setItem(row, 3, location_item)
                 
-                # Actions - Create Edit/Delete buttons
-                action_buttons = self.create_action_buttons(row)
-                table.setCellWidget(row, 4, action_buttons)
+                # Actions - Create Edit/Delete buttons only for authorized users using UI method
+                if show_actions and hasattr(self.activities_ui, 'create_action_buttons'):
+                    action_buttons = self.activities_ui.create_action_buttons(
+                        row, 
+                        edit_callback=self.edit_activity, 
+                        delete_callback=self.delete_activity
+                    )
+                    if action_buttons:  # Only set if buttons were created
+                        table.setCellWidget(row, 4, action_buttons)
             
             # Re-enable sorting
             table.setSortingEnabled(True)
@@ -305,6 +282,15 @@ class ActivitiesManager:
     def edit_activity(self, row):
         """Handle edit activity action - UPDATED TO USE ADD EVENT MANAGER"""
         try:
+            # Check permission first
+            if not self.can_edit_activities():
+                QMessageBox.warning(
+                    self.main_app,
+                    "Access Denied",
+                    "You do not have permission to edit activities."
+                )
+                return
+                
             if not hasattr(self.activities_ui, 'activitiesTable'):
                 return
                 
@@ -358,6 +344,15 @@ class ActivitiesManager:
     def delete_activity(self, row):
         """Handle delete activity action"""
         try:
+            # Check permission first
+            if not self.can_edit_activities():
+                QMessageBox.warning(
+                    self.main_app,
+                    "Access Denied",
+                    "You do not have permission to delete activities."
+                )
+                return
+                
             if not hasattr(self.activities_ui, 'activitiesTable'):
                 return
                 
@@ -531,6 +526,15 @@ class ActivitiesManager:
     def show_add_event(self):
         """Show the add event interface - UPDATED TO USE ADD EVENT MANAGER"""
         try:
+            # Check permission first
+            if not self.can_add_activities():
+                QMessageBox.warning(
+                    self.main_app,
+                    "Access Denied",
+                    "You do not have permission to add new activities."
+                )
+                return
+                
             # Use the main app's add event manager to show add event view
             if hasattr(self.main_app, 'add_event_manager'):
                 self.main_app.add_event_manager.setup_add_event_view()
