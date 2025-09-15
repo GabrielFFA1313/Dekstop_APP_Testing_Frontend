@@ -251,8 +251,8 @@ class BaseUi(object):
         # Central Content for Upcoming Events
         self.centralContent = QtWidgets.QWidget()
         self.centralContent.setStyleSheet("background-color: white;")
-        self.centralContent.setMinimumWidth(150)
-        self.centralContent.setMaximumWidth(500)
+        self.centralContent.setMinimumWidth(250) 
+        self.centralContent.setMaximumWidth(550)
         self.centralContentLayout = QtWidgets.QVBoxLayout(self.centralContent)
         self.contentLayout.setSpacing(0)
         self.contentLayout.setContentsMargins(0, 0, 0, 0)
@@ -301,15 +301,15 @@ class BaseUi(object):
 
         # Legend 
         self.legendLayout = QtWidgets.QHBoxLayout()
-        self.legendLayout.setSpacing(8)  # Reduced from 20 to 8
+        self.legendLayout.setSpacing(12) 
         
         legend_style = """
             QLabel {
-                padding: 3px 6px;
+                padding: 5px 8px;
                 border-radius: 3px;
                 background-color: #f8f9fa;
                 border: 1px solid #e9ecef;
-                font-size: 11px;
+                font-size: 13px;
                 font-weight: 500;
             }
         """

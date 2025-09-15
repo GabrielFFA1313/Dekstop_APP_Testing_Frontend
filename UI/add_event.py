@@ -1,4 +1,4 @@
-# ADD_EVENT.py - Add Event UI
+# ADD_EVENT.py - Add Event UI with Compact Layout
 import sys
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QApplication, QMainWindow, QDateEdit, QTimeEdit, QTextEdit
@@ -27,7 +27,7 @@ class Ui_MainWindow(BaseUi):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def setup_add_event_section(self):
-        """Setup the add event form section - RESPONSIVE FOR ALL SCREEN SIZES"""
+        """Setup the add event form section - COMPACT VERSION"""
         # Create a scroll area for better handling of different screen sizes
         self.scrollArea = QtWidgets.QScrollArea()
         self.scrollArea.setWidgetResizable(True)
@@ -38,27 +38,27 @@ class Ui_MainWindow(BaseUi):
         # Create scroll widget
         self.scrollWidget = QtWidgets.QWidget()
         self.scrollLayout = QtWidgets.QVBoxLayout(self.scrollWidget)
-        self.scrollLayout.setContentsMargins(20, 20, 20, 20)
-        self.scrollLayout.setSpacing(15)
+        self.scrollLayout.setContentsMargins(10, 10, 10, 10)  # Smaller margins
+        self.scrollLayout.setSpacing(8)  # Reduced spacing
         
-        # Add Event Form Container - RESPONSIVE SIZING
+        # Add Event Form Container - BIGGER SIZING, CENTERED
         self.addEventContainer = QtWidgets.QFrame()
-        self.addEventContainer.setMinimumWidth(500)
-        self.addEventContainer.setMaximumWidth(1200)  # Allow it to grow larger
+        self.addEventContainer.setMinimumWidth(600)  # Bigger minimum
+        self.addEventContainer.setMaximumWidth(950)  # Bigger maximum
         self.addEventContainer.setObjectName("addEventContainer")
         self.addEventContainer.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Preferred)
         self.addEventContainer.setStyleSheet("""
             QFrame#addEventContainer {
                 background-color: white;
                 border: 2px solid #084924;
-                border-radius: 12px;
-                margin: 20px;
+                border-radius: 8px;
+                margin: 10px;
             }
         """)
         
         self.addEventLayout = QtWidgets.QVBoxLayout(self.addEventContainer)
-        self.addEventLayout.setContentsMargins(20, 20, 20, 20)
-        self.addEventLayout.setSpacing(15)
+        self.addEventLayout.setContentsMargins(20, 20, 20, 20)  # Bigger margins for larger container
+        self.addEventLayout.setSpacing(12)  # More spacing for bigger container
         
         # Header with back arrow and title
         self.setup_header()
@@ -72,6 +72,9 @@ class Ui_MainWindow(BaseUi):
         # Action buttons
         self.setup_action_buttons()
         
+        # Add stretch at top to center the container vertically
+        self.scrollLayout.addStretch()
+        
         # Add the form to the scroll layout
         self.scrollLayout.addWidget(self.addEventContainer, 0, Qt.AlignmentFlag.AlignCenter)
         self.scrollLayout.addStretch()
@@ -83,32 +86,33 @@ class Ui_MainWindow(BaseUi):
         self.contentLayout.addWidget(self.scrollArea)
 
     def setup_header(self):
-        """Setup the header with back button and title"""
+        """Setup the header with back button and title - COMPACT VERSION"""
         # Create bordered header container
         self.headerContainer = QtWidgets.QFrame()
         self.headerContainer.setStyleSheet("""
             QFrame {
                 background-color: #f8f9fa;
                 border: 1px solid #e9ecef;
-                border-radius: 6px;
-                padding: 10px;
-                margin-bottom: 15px;
+                border-radius: 4px;
+                padding: 6px;
+                margin-bottom: 8px;
             }
         """)
         
         self.headerLayout = QtWidgets.QHBoxLayout(self.headerContainer)
+        self.headerLayout.setSpacing(8)  # Smaller spacing
         
-        # Back button
+        # Back button - SMALLER
         self.btnBack = QtWidgets.QPushButton("← Add Event")
         self.btnBack.setStyleSheet("""
             QPushButton {
                 background-color: transparent;
                 color: #084924;
                 border: none;
-                font-size: 18px;
+                font-size: 14px;
                 font-weight: bold;
                 text-align: left;
-                padding: 5px;
+                padding: 3px;
             }
             QPushButton:hover {
                 color: #FDC601;
@@ -120,16 +124,16 @@ class Ui_MainWindow(BaseUi):
         # Stretch to push buttons to the right
         self.headerLayout.addStretch()
         
-        # Action buttons in header
+        # Action buttons in header - SMALLER
         self.btnManageEvents = QtWidgets.QPushButton("Manage Events")
         self.btnManageEvents.setStyleSheet("""
             QPushButton {
                 background-color: #084924;
                 color: white;
                 border: none;
-                border-radius: 4px;
-                padding: 8px 16px;
-                font-size: 12px;
+                border-radius: 3px;
+                padding: 6px 12px;
+                font-size: 10px;
                 font-weight: bold;
             }
             QPushButton:hover {
@@ -144,9 +148,9 @@ class Ui_MainWindow(BaseUi):
                 background-color: #FDC601;
                 color: #084924;
                 border: none;
-                border-radius: 4px;
-                padding: 8px 16px;
-                font-size: 12px;
+                border-radius: 3px;
+                padding: 6px 12px;
+                font-size: 10px;
                 font-weight: bold;
             }
             QPushButton:hover {
@@ -155,16 +159,17 @@ class Ui_MainWindow(BaseUi):
         """)
         self.headerLayout.addWidget(self.btnViewAll)
         
-        # Search field
+        # Search field - SMALLER
         self.searchField = QtWidgets.QLineEdit()
         self.searchField.setPlaceholderText("Search")
-        self.searchField.setFixedWidth(150)
+        self.searchField.setFixedWidth(120)  # Smaller width
         self.searchField.setStyleSheet("""
             QLineEdit {
                 border: 1px solid #ccc;
-                border-radius: 4px;
-                padding: 6px;
+                border-radius: 3px;
+                padding: 4px;
                 background-color: white;
+                font-size: 10px;
             }
             QLineEdit:focus {
                 border-color: #FDC601;
@@ -172,15 +177,15 @@ class Ui_MainWindow(BaseUi):
         """)
         self.headerLayout.addWidget(self.searchField)
         
-        # Search button
+        # Search button - SMALLER
         self.btnSearch = QtWidgets.QPushButton("🔍")
-        self.btnSearch.setFixedSize(30, 30)
+        self.btnSearch.setFixedSize(26, 26)  # Smaller size
         self.btnSearch.setStyleSheet("""
             QPushButton {
                 background-color: #f0f0f0;
                 border: 1px solid #ccc;
-                border-radius: 4px;
-                font-size: 14px;
+                border-radius: 3px;
+                font-size: 12px;
             }
             QPushButton:hover {
                 background-color: #FDC601;
@@ -192,43 +197,43 @@ class Ui_MainWindow(BaseUi):
         self.addEventLayout.addWidget(self.headerContainer)
 
     def setup_event_form(self):
-        """Setup the event form fields - RESPONSIVE GRID LAYOUT"""
+        """Setup the event form fields - COMPACT VERSION (keeping calendar popup large)"""
         # Create a bordered container for the form
         self.formContainer = QtWidgets.QFrame()
         self.formContainer.setStyleSheet("""
             QFrame {
                 border: 2px solid #ddd;
-                border-radius: 8px;
+                border-radius: 6px;
                 background-color: #f9f9f9;
-                padding: 15px;
-                margin: 10px 0px;
+                padding: 8px;
+                margin: 3px 0px;
             }
         """)
         
-        # Form layout - MODIFIED FOR RESPONSIVENESS
+        # Form layout - COMPACT VERSION
         self.formLayout = QtWidgets.QGridLayout(self.formContainer)
-        self.formLayout.setSpacing(15)
-        self.formLayout.setContentsMargins(20, 20, 20, 20)
+        self.formLayout.setSpacing(8)  # Smaller spacing
+        self.formLayout.setContentsMargins(10, 10, 10, 10)  # Smaller margins
         
-        # Set column stretch factors to make them responsive
+        # Set column stretch factors - more balanced
         self.formLayout.setColumnStretch(0, 0)  # Label column - fixed width
         self.formLayout.setColumnStretch(1, 1)  # Input column - expandable
         self.formLayout.setColumnStretch(2, 0)  # Label column - fixed width  
         self.formLayout.setColumnStretch(3, 1)  # Input column - expandable
         
-        # Set minimum column widths
-        self.formLayout.setColumnMinimumWidth(1, 200)
-        self.formLayout.setColumnMinimumWidth(3, 200)
+        # Set smaller minimum column widths
+        self.formLayout.setColumnMinimumWidth(1, 120)  # Much smaller
+        self.formLayout.setColumnMinimumWidth(3, 120)  # Much smaller
         
-        # Input field styling - RESPONSIVE SIZING
+        # Input field styling - COMPACT VERSION (keeping large calendar)
         input_style = """
             QLineEdit, QComboBox, QDateEdit, QTimeEdit, QTextEdit {
                 border: 1px solid #ccc;
                 border-radius: 4px;
-                padding: 8px;
+                padding: 4px;
                 background-color: white;
-                font-size: 12px;
-                min-height: 20px;
+                font-size: 11px;
+                min-height: 16px;
             }
             QLineEdit:focus, QComboBox:focus, QDateEdit:focus, QTimeEdit:focus, QTextEdit:focus {
                 border-color: #FDC601;
@@ -236,16 +241,98 @@ class Ui_MainWindow(BaseUi):
             }
             QComboBox::drop-down {
                 border: none;
-                width: 20px;
+                width: 16px;
             }
             QComboBox::down-arrow {
-                width: 12px;
-                height: 12px;
+                width: 8px;
+                height: 8px;
+            }
+            
+            /* KEEP LARGE CALENDAR POPUP STYLING AS REQUESTED */
+            QCalendarWidget {
+                min-width: 450px;
+                min-height: 400px;
+                max-width: 500px;
+                max-height: 450px;
+                font-size: 14px;
+                background-color: white;
+                border: 2px solid #084924;
+                border-radius: 8px;
+            }
+            QCalendarWidget QWidget#qt_calendar_navigationbar {
+                background-color: #084924;
+                min-height: 45px;
+                max-height: 45px;
+            }
+            QCalendarWidget QToolButton {
+                color: white;
+                background-color: #084924;
+                border: none;
+                font-size: 16px;
+                font-weight: bold;
+                min-width: 35px;
+                min-height: 35px;
+            }
+            QCalendarWidget QToolButton:hover {
+                background-color: #FDC601;
+                color: #084924;
+                border-radius: 4px;
+            }
+            QCalendarWidget QMenu {
+                background-color: white;
+                border: 1px solid #084924;
+                font-size: 14px;
+            }
+            QCalendarWidget QSpinBox {
+                background-color: white;
+                color: #084924;
+                font-size: 16px;
+                font-weight: bold;
+                min-width: 80px;
+                min-height: 35px;
+                border: 1px solid #ccc;
+            }
+            QCalendarWidget QAbstractItemView {
+                font-size: 16px;
+                selection-background-color: #FDC601;
+                selection-color: #084924;
+                font-weight: bold;
+            }
+            QCalendarWidget QAbstractItemView:enabled {
+                color: #084924;
+                background-color: white;
+            }
+            QCalendarWidget QHeaderView::section {
+                background-color: #f8f9fa;
+                color: #084924;
+                font-weight: bold;
+                font-size: 14px;
+                border: 1px solid #e9ecef;
+                min-height: 40px;
+                padding: 8px;
+            }
+            QCalendarWidget QTableView {
+                gridline-color: #e9ecef;
+                alternate-background-color: #f8f9fa;
+                font-size: 16px;
+            }
+            QCalendarWidget QTableView::item {
+                padding: 8px;
+                min-height: 25px;
+                min-width: 25px;
+            }
+            QCalendarWidget QTableView::item:hover {
+                background-color: #e3f2fd;
+            }
+            QCalendarWidget QTableView::item:selected {
+                background-color: #FDC601;
+                color: #084924;
+                font-weight: bold;
             }
         """
         
-        # Label styling
-        label_style = "font-weight: bold; color: #084924; font-size: 12px;"
+        # Label styling - smaller
+        label_style = "font-weight: bold; color: #084924; font-size: 10px;"
         
         # Event Title
         row = 0
@@ -266,8 +353,8 @@ class Ui_MainWindow(BaseUi):
         
         self.inputDescription = QTextEdit()
         self.inputDescription.setPlaceholderText("(Optional)")
-        self.inputDescription.setMaximumHeight(80)
-        self.inputDescription.setMinimumHeight(80)
+        self.inputDescription.setMaximumHeight(50)  # Much smaller
+        self.inputDescription.setMinimumHeight(50)
         self.inputDescription.setStyleSheet(input_style)
         self.inputDescription.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed)
         self.formLayout.addWidget(self.inputDescription, row, 3)
@@ -320,11 +407,11 @@ class Ui_MainWindow(BaseUi):
         self.labelStartTime.setStyleSheet(label_style)
         self.formLayout.addWidget(self.labelStartTime, row, 2, Qt.AlignmentFlag.AlignTop)
         
-        # Start Time Layout with AM/PM buttons - RESPONSIVE
+        # Start Time Layout with AM/PM buttons - MUCH MORE COMPACT
         self.startTimeWidget = QtWidgets.QWidget()
         self.startTimeLayout = QtWidgets.QHBoxLayout(self.startTimeWidget)
         self.startTimeLayout.setContentsMargins(0, 0, 0, 0)
-        self.startTimeLayout.setSpacing(5)
+        self.startTimeLayout.setSpacing(2)  # Very small spacing
         
         self.timeStart = QTimeEdit()
         self.timeStart.setTime(QTime(9, 0))
@@ -336,21 +423,21 @@ class Ui_MainWindow(BaseUi):
         self.btnStartAM = QtWidgets.QPushButton("AM")
         self.btnStartAM.setCheckable(True)
         self.btnStartAM.setChecked(True)
-        self.btnStartAM.setFixedSize(40, 30)
+        self.btnStartAM.setFixedSize(28, 22)  # Much smaller buttons
         self.btnStartAM.clicked.connect(lambda: self.set_am_pm(self.btnStartAM, self.btnStartPM))
         
         self.btnStartPM = QtWidgets.QPushButton("PM")
         self.btnStartPM.setCheckable(True)
-        self.btnStartPM.setFixedSize(40, 30)
+        self.btnStartPM.setFixedSize(28, 22)  # Much smaller buttons
         self.btnStartPM.clicked.connect(lambda: self.set_am_pm(self.btnStartPM, self.btnStartAM))
         
-        # AM/PM button styling
+        # AM/PM button styling - MUCH SMALLER
         ampm_style = """
             QPushButton {
                 border: 1px solid #ccc;
-                border-radius: 4px;
+                border-radius: 2px;
                 background-color: white;
-                font-size: 10px;
+                font-size: 8px;
             }
             QPushButton:checked {
                 background-color: #FDC601;
@@ -387,11 +474,11 @@ class Ui_MainWindow(BaseUi):
         self.labelEndTime.setStyleSheet(label_style)
         self.formLayout.addWidget(self.labelEndTime, row, 2, Qt.AlignmentFlag.AlignTop)
         
-        # End Time Layout with AM/PM buttons - RESPONSIVE
+        # End Time Layout with AM/PM buttons - MUCH MORE COMPACT
         self.endTimeWidget = QtWidgets.QWidget()
         self.endTimeLayout = QtWidgets.QHBoxLayout(self.endTimeWidget)
         self.endTimeLayout.setContentsMargins(0, 0, 0, 0)
-        self.endTimeLayout.setSpacing(5)
+        self.endTimeLayout.setSpacing(2)  # Very small spacing
         
         self.timeEnd = QTimeEdit()
         self.timeEnd.setTime(QTime(17, 0))
@@ -402,13 +489,13 @@ class Ui_MainWindow(BaseUi):
         
         self.btnEndAM = QtWidgets.QPushButton("AM")
         self.btnEndAM.setCheckable(True)
-        self.btnEndAM.setFixedSize(40, 30)
+        self.btnEndAM.setFixedSize(28, 22)  # Much smaller buttons
         self.btnEndAM.clicked.connect(lambda: self.set_am_pm(self.btnEndAM, self.btnEndPM))
         
         self.btnEndPM = QtWidgets.QPushButton("PM")
         self.btnEndPM.setCheckable(True)
         self.btnEndPM.setChecked(True)
-        self.btnEndPM.setFixedSize(40, 30)
+        self.btnEndPM.setFixedSize(28, 22)  # Much smaller buttons
         self.btnEndPM.clicked.connect(lambda: self.set_am_pm(self.btnEndPM, self.btnEndAM))
         
         self.btnEndAM.setStyleSheet(ampm_style)
@@ -422,49 +509,49 @@ class Ui_MainWindow(BaseUi):
         self.addEventLayout.addWidget(self.formContainer)
 
     def setup_user_selection(self):
-        """Setup user type selection checkboxes"""
+        """Setup user type selection checkboxes - COMPACT VERSION"""
         # Create a bordered container for user selection
         self.userSelectionContainer = QtWidgets.QFrame()
         self.userSelectionContainer.setStyleSheet("""
             QFrame {
                 border: 2px solid #ddd;
-                border-radius: 8px;
+                border-radius: 6px;
                 background-color: #f9f9f9;
-                padding: 15px;
-                margin: 10px 0px;
+                padding: 8px;
+                margin: 3px 0px;
             }
         """)
         
         self.userContainerLayout = QtWidgets.QVBoxLayout(self.userSelectionContainer)
-        self.userContainerLayout.setContentsMargins(15, 15, 15, 15)
+        self.userContainerLayout.setContentsMargins(10, 8, 10, 8)  # Smaller margins
         
         # Add a title for this section
         self.userSelectionTitle = QtWidgets.QLabel("Target Audience")
-        self.userSelectionTitle.setStyleSheet("font-weight: bold; color: #084924; font-size: 14px; margin-bottom: 10px;")
+        self.userSelectionTitle.setStyleSheet("font-weight: bold; color: #084924; font-size: 12px; margin-bottom: 5px;")
         self.userContainerLayout.addWidget(self.userSelectionTitle)
         
         self.userSelectionLayout = QtWidgets.QHBoxLayout()
-        self.userSelectionLayout.setSpacing(20)
+        self.userSelectionLayout.setSpacing(15)  # Smaller spacing
         
-        # Checkbox styling
+        # Checkbox styling - SMALLER
         checkbox_style = """
             QCheckBox {
-                font-size: 12px;
+                font-size: 10px;
                 color: #084924;
-                spacing: 8px;
+                spacing: 6px;
             }
             QCheckBox::indicator {
-                width: 16px;
-                height: 16px;
+                width: 14px;
+                height: 14px;
             }
             QCheckBox::indicator:unchecked {
                 border: 2px solid #ccc;
-                border-radius: 3px;
+                border-radius: 2px;
                 background-color: white;
             }
             QCheckBox::indicator:checked {
                 border: 2px solid #084924;
-                border-radius: 3px;
+                border-radius: 2px;
                 background-color: #FDC601;
             }
         """
@@ -495,20 +582,20 @@ class Ui_MainWindow(BaseUi):
         self.addEventLayout.addWidget(self.userSelectionContainer)
 
     def setup_action_buttons(self):
-        """Setup the save and cancel buttons"""
+        """Setup the save and cancel buttons - COMPACT VERSION"""
         self.actionButtonsLayout = QtWidgets.QHBoxLayout()
         self.actionButtonsLayout.addStretch()
         
-        # Cancel button
+        # Cancel button - SMALLER
         self.btnCancel = QtWidgets.QPushButton("Cancel")
-        self.btnCancel.setFixedSize(100, 35)
+        self.btnCancel.setFixedSize(80, 30)  # Smaller size
         self.btnCancel.setStyleSheet("""
             QPushButton {
                 background-color: #f0f0f0;
                 color: #666;
                 border: 1px solid #ccc;
                 border-radius: 4px;
-                font-size: 12px;
+                font-size: 11px;
                 font-weight: bold;
             }
             QPushButton:hover {
@@ -518,16 +605,16 @@ class Ui_MainWindow(BaseUi):
         self.btnCancel.clicked.connect(self.cancel_event)
         self.actionButtonsLayout.addWidget(self.btnCancel)
         
-        # Save button
+        # Save button - SMALLER
         self.btnSave = QtWidgets.QPushButton("Save")
-        self.btnSave.setFixedSize(100, 35)
+        self.btnSave.setFixedSize(80, 30)  # Smaller size
         self.btnSave.setStyleSheet("""
             QPushButton {
                 background-color: #084924;
                 color: white;
                 border: none;
                 border-radius: 4px;
-                font-size: 12px;
+                font-size: 11px;
                 font-weight: bold;
             }
             QPushButton:hover {
@@ -641,8 +728,8 @@ class AddEventApp(QMainWindow):
         self.ui.btnBack.clicked.connect(self.close)
         
         # Set window properties
-        self.setMinimumSize(1000, 700)
-        self.resize(1200, 800)
+        self.setMinimumSize(800, 600)  # Smaller minimum window size
+        self.resize(900, 700)  # Smaller default size
         
         # Set window title
         self.setWindowTitle(f"CISC Calendar - Add Event ({self.user_role.title()})")

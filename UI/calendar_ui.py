@@ -95,10 +95,14 @@ class CalendarUi(BaseUi):
         """Setup the main calendar widget"""
         self.calendarWidget = QtWidgets.QCalendarWidget()
         self.calendarWidget.setMinimumSize(500, 400)
+        
+        # Hide the week number column
+        self.calendarWidget.setVerticalHeaderFormat(QtWidgets.QCalendarWidget.VerticalHeaderFormat.NoVerticalHeader)
+        
         self.calendarWidget.setStyleSheet("""
             QCalendarWidget {
                 background-color: white;
-                border: 2px solid #084924;
+                border: 2px solid black;
                 border-radius: 10px;
                 font-family: Arial, sans-serif;
             }
@@ -144,7 +148,7 @@ class CalendarUi(BaseUi):
                 border: none;
                 padding: 5px;
             }
-                                          
+                                        
         """)
         self.calendarLayout.addWidget(self.calendarWidget)
 

@@ -266,7 +266,7 @@ class Ui_MainWindow(BaseUi):
                 border: 2px solid #FDC601;
                 border-radius: 8px;
                 gridline-color: #e0e0e0;
-                font-size: 11px;
+                font-size: 12px;
                 alternate-background-color: #f8f9fa;
             }
             
@@ -322,13 +322,16 @@ class Ui_MainWindow(BaseUi):
             }
         """)
         
-        # Set column widths
-        self.activitiesTable.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)  # Date & Time
-        self.activitiesTable.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)  # Event
-        self.activitiesTable.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)  # Type
-        self.activitiesTable.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)  # Location
-        self.activitiesTable.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)  # Status
-        self.activitiesTable.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)  # Action
+        # Set column widths - Fixed mode with specific widths
+        self.activitiesTable.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
+        
+        # Set specific column widths
+        self.activitiesTable.setColumnWidth(0, 100)  # Date & Time - same as others
+        self.activitiesTable.setColumnWidth(1, 200)  # Event - larger
+        self.activitiesTable.setColumnWidth(2, 100)  # Type - same as others  
+        self.activitiesTable.setColumnWidth(3, 100)  # Location - same as others
+        self.activitiesTable.setColumnWidth(4, 100)  # Status - same as others
+        self.activitiesTable.setColumnWidth(5, 130)  # Action - larger for buttons
         
         # Set row height
         self.activitiesTable.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)

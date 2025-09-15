@@ -80,10 +80,10 @@ class ActivitiesManager:
                 
                 # Set specific widths for all columns
                 self.activities_ui.activitiesTable.setColumnWidth(0, 120)  # Date & Time
-                self.activities_ui.activitiesTable.setColumnWidth(1, 280)  # Event column 
-                self.activities_ui.activitiesTable.setColumnWidth(2, 120)  # Type
+                self.activities_ui.activitiesTable.setColumnWidth(1, 210)  # Event column 
+                self.activities_ui.activitiesTable.setColumnWidth(2, 130)  # Type
                 self.activities_ui.activitiesTable.setColumnWidth(3, 140)  # Location
-                self.activities_ui.activitiesTable.setColumnWidth(4, 160)  # Actions
+                self.activities_ui.activitiesTable.setColumnWidth(4, 150)  # Actions
             else:
                 # Hide Actions column for student, org, faculty users
                 self.activities_ui.activitiesTable.setColumnCount(4)
