@@ -5,7 +5,6 @@ try:
     from .base_ui import BaseUi 
 except ImportError:
     from base_ui import BaseUi
-
 from datetime import datetime, timedelta
 
 class DayViewUi(BaseUi):
@@ -43,12 +42,11 @@ class DayViewUi(BaseUi):
         
         # Create day view container that expands like calendar UI does
         self.dayViewContainer = QtWidgets.QWidget()
-        self.dayViewContainer.setStyleSheet("background-color: white; border-left: 1px solid #ddd;")
-        # Remove the fixed width completely to match calendar UI behavior
-        # Don't set any width constraints - let it expand naturally
+        self.dayViewContainer.setStyleSheet("background-color: white;")
+        # Remove the border-left completely - this was causing the gray bar
         
         self.dayViewLayout = QtWidgets.QVBoxLayout(self.dayViewContainer)
-        self.dayViewLayout.setContentsMargins(20, 20, 20, 20)
+        self.dayViewLayout.setContentsMargins(20, 20, 20, 20)  
         self.dayViewLayout.setSpacing(15)
         
         # Setup day view header and calendar
@@ -110,7 +108,6 @@ class DayViewUi(BaseUi):
             font-size: 18px;
             font-weight: bold;
             color: #084924;
-            margin-bottom: 10px;
         """)
         self.dayViewLayout.addWidget(self.dayViewTitle)
         
@@ -172,11 +169,11 @@ class DayViewUi(BaseUi):
         
         self.dayViewLayout.addLayout(self.navButtonsLayout)
         
-        # Today button
-        self.btnToday = QtWidgets.QPushButton("Date Today")
+        # Today button (separate row)
+        self.btnToday = QtWidgets.QPushButton("Today")
         self.btnToday.setStyleSheet("""
             QPushButton {
-                background-color: #084924;
+                background-color: #FDC601;
                 color: white;
                 border: none;
                 border-radius: 4px;
@@ -186,7 +183,7 @@ class DayViewUi(BaseUi):
                 margin-top: 5px;
             }
             QPushButton:hover {
-                background-color: #FDC601;
+                background-color: #084924;
             }
         """)
         

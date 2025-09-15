@@ -29,7 +29,7 @@ class AddEventManager:
         self.mode = "edit"
         self.edit_event_data = event_data
         self._setup_event_view(EditEventUi)
-
+    # NOTE the geometry helps with the window size
     def _setup_event_view(self, ui_class):
         """Common setup for both add and edit event views"""
         try:
@@ -39,6 +39,7 @@ class AddEventManager:
             # Clear any existing central widget
             self.main_app.setCentralWidget(None)
             
+            # NOTE collection of garbage so that the changing of ui avoids lagging the application 
             # Force garbage collection
             import gc
             gc.collect()

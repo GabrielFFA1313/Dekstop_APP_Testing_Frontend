@@ -14,7 +14,7 @@ class ActivitiesManager:
         self.event_manager = event_manager
         self.activities_ui = None
         self.all_activities = []
-
+    # NOTE the geometry helps with the window size
     def setup_activities_view(self):
         """Setup the activities view as the main content"""
         try:
@@ -24,6 +24,7 @@ class ActivitiesManager:
             # Clear the current central widget
             self.main_app.setCentralWidget(None)
             
+            # NOTE collection of garbage so that the changing of ui avoids lagging the application 
             # Force garbage collection
             import gc
             gc.collect()

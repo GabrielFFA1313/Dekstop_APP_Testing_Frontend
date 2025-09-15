@@ -14,7 +14,7 @@ class DayViewManager:
         self.main_app = main_app
         self.event_manager = event_manager
         self.day_view_ui = None
-
+    # NOTE the geometry helps with the window size
     def setup_day_view(self, selected_date=None):
         """Setup the day view as the main content"""
         try:
@@ -30,6 +30,7 @@ class DayViewManager:
             # Clear any existing central widget
             self.main_app.setCentralWidget(None)
             
+            # NOTE collection of garbage so that the changing of ui avoids lagging the application 
             # Force garbage collection
             import gc
             gc.collect()

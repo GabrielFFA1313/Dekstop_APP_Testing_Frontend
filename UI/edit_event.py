@@ -155,38 +155,38 @@ class Ui_MainWindow(BaseUi):
         """)
         self.headerLayout.addWidget(self.btnViewAll)
         
-        # Search field
-        self.searchField = QtWidgets.QLineEdit()
-        self.searchField.setPlaceholderText("Search")
-        self.searchField.setFixedWidth(150)
-        self.searchField.setStyleSheet("""
-            QLineEdit {
-                border: 1px solid #ccc;
-                border-radius: 4px;
-                padding: 6px;
-                background-color: white;
-            }
-            QLineEdit:focus {
-                border-color: #FDC601;
-            }
-        """)
-        self.headerLayout.addWidget(self.searchField)
+        # # Search field
+        # self.searchField = QtWidgets.QLineEdit()
+        # self.searchField.setPlaceholderText("Search")
+        # self.searchField.setFixedWidth(150)
+        # self.searchField.setStyleSheet("""
+        #     QLineEdit {
+        #         border: 1px solid #ccc;
+        #         border-radius: 4px;
+        #         padding: 6px;
+        #         background-color: white;
+        #     }
+        #     QLineEdit:focus {
+        #         border-color: #FDC601;
+        #     }
+        # """)
+        # self.headerLayout.addWidget(self.searchField)
         
-        # Search button
-        self.btnSearch = QtWidgets.QPushButton("🔍")
-        self.btnSearch.setFixedSize(30, 30)
-        self.btnSearch.setStyleSheet("""
-            QPushButton {
-                background-color: #f0f0f0;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-                font-size: 14px;
-            }
-            QPushButton:hover {
-                background-color: #FDC601;
-            }
-        """)
-        self.headerLayout.addWidget(self.btnSearch)
+        # # Search button
+        # self.btnSearch = QtWidgets.QPushButton("🔍")
+        # self.btnSearch.setFixedSize(30, 30)
+        # self.btnSearch.setStyleSheet("""
+        #     QPushButton {
+        #         background-color: #f0f0f0;
+        #         border: 1px solid #ccc;
+        #         border-radius: 4px;
+        #         font-size: 14px;
+        #     }
+        #     QPushButton:hover {
+        #         background-color: #FDC601;
+        #     }
+        # """)
+        # self.headerLayout.addWidget(self.btnSearch)
         
         # Add the header container to the main layout
         self.editEventLayout.addWidget(self.headerContainer)

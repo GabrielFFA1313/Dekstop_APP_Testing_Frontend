@@ -213,7 +213,7 @@ class BaseUi(object):
 
         # Stretch to push search bar to the right
         self.topLayout.addStretch()
-
+        # delete later
         # # Search bar
         # self.searchBarTop = QtWidgets.QLineEdit()
         # self.searchBarTop.setFixedWidth(200)
@@ -264,20 +264,21 @@ class BaseUi(object):
         self.topBar.addWidget(self.labelTitle)
         self.topBar.addStretch()
         
-        self.searchEvent = QtWidgets.QLineEdit()
-        self.searchEvent.setPlaceholderText("Search Event...")
-        self.searchEvent.setStyleSheet("""
-            QLineEdit {
-                border: 1px solid #ccc;
-                border-radius: 4px;
-                padding: 6px;
-                background-color: white;
-            }
-            QLineEdit:focus {
-                border-color: #FDC601;
-            }
-        """)
-        self.topBar.addWidget(self.searchEvent)
+        # delete later
+        # self.searchEvent = QtWidgets.QLineEdit()
+        # self.searchEvent.setPlaceholderText("Search Event...")
+        # self.searchEvent.setStyleSheet("""
+        #     QLineEdit {
+        #         border: 1px solid #ccc;
+        #         border-radius: 4px;
+        #         padding: 6px;
+        #         background-color: white;
+        #     }
+        #     QLineEdit:focus {
+        #         border-color: #FDC601;
+        #     }
+        # """)
+        # self.topBar.addWidget(self.searchEvent)
         self.centralContentLayout.addLayout(self.topBar)
 
         # UPCOMING EVENTS FRAME

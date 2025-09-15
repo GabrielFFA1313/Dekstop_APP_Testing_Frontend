@@ -41,11 +41,11 @@ class MainApplication(QMainWindow):
         
         # Initialize UI references
         self.calendar_ui = None
-        self.search_ui = None  # ADDED: Search UI reference
+        self.search_ui = None
         
         # Setup Calendar UI (default view)
         self.setup_calendar_view()
-
+    # NOTE the geometry helps with the window size
     def setup_calendar_view(self):
         """Setup the calendar view as the main content"""
         try:
@@ -77,6 +77,7 @@ class MainApplication(QMainWindow):
             import traceback
             traceback.print_exc()
 
+    #Al the connection for the buttons and dropdowns in the calendar
     def setup_calendar_connections(self):
         """Setup calendar-specific connections"""
         try:
@@ -124,17 +125,39 @@ class MainApplication(QMainWindow):
                     pass
                 self.calendar_ui.searchBarTop.returnPressed.connect(self.perform_search)
             
-            # Connect calendar date selection
+            # Connect calendar date selection for tracking current date
             if hasattr(self.calendar_ui, 'calendarWidget'):
                 try:
                     self.calendar_ui.calendarWidget.selectionChanged.disconnect()
                 except:
                     pass
                 self.calendar_ui.calendarWidget.selectionChanged.connect(self.on_calendar_date_changed)
+                
+                # Connect calendar click to go to day view on clicked date
+                try:
+                    self.calendar_ui.calendarWidget.clicked.disconnect()
+                except:
+                    pass
+                self.calendar_ui.calendarWidget.clicked.connect(self.on_calendar_date_clicked)
             
         except Exception as e:
             import traceback
             traceback.print_exc()
+
+
+    def on_calendar_date_clicked(self, clicked_date):
+        """Handle calendar date click - go to day view for that date"""
+        try:
+            # Update current date to the clicked date
+            self.current_date = clicked_date
+            
+            # Switch to day view with the clicked date
+            self.show_day_view()
+            
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(self, "Error", f"Could not navigate to day view: {str(e)}")
 
     def perform_search(self):
         """ Perform search based on search bar input"""
@@ -157,7 +180,7 @@ class MainApplication(QMainWindow):
             import traceback
             traceback.print_exc()
             QMessageBox.critical(self, "Error", f"Search failed: {str(e)}")
-
+    # NOTE the geometry helps with the window size
     def show_search_view(self, search_query=""):
         """ Switch to search view and perform search"""
         try:
@@ -174,7 +197,7 @@ class MainApplication(QMainWindow):
             # Setup search connections
             self.setup_search_connections()
             
-            # FIXED: Populate upcoming events in search view
+            # Populate upcoming events in search view
             self.populate_upcoming_events_search()
             
             # Perform search if query provided
@@ -298,7 +321,7 @@ class MainApplication(QMainWindow):
             if not self.search_ui:
                 return
             
-            # Use the inherited listUpcoming widget from BaseUi, not the search results area
+            # Use the inherited listUpcoming widget from BaseUi
             if not hasattr(self.search_ui, 'listUpcoming'):
                 return
             
@@ -309,7 +332,7 @@ class MainApplication(QMainWindow):
             upcoming_events = self.event_manager.get_upcoming_events(limit=10)
             
             if upcoming_events:
-                # Add events to the upcoming events list (same format as calendar view)
+                # Add events to the upcoming events list
                 for date, title, category in upcoming_events:
                     formatted_date = date.toString("MMM dd, yyyy")
                     
@@ -347,7 +370,7 @@ class MainApplication(QMainWindow):
             traceback.print_exc()
 
     def execute_search(self, search_query):
-        """UPDATED: Execute search through event manager and display results"""
+        """Execute search through event manager and display results"""
         try:
             if not search_query or not self.search_ui:
                 return
@@ -495,7 +518,7 @@ class MainApplication(QMainWindow):
         try:
             self.day_view_manager.setup_day_view(self.current_date)
             self.current_view = "day"
-            self.calendar_ui = None  # Clear calendar reference
+            self.calendar_ui = None  # Clearing calendar reference
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Could not switch to day view: {str(e)}")
 
@@ -504,7 +527,7 @@ class MainApplication(QMainWindow):
         try:
             self.activities_manager.setup_activities_view()
             self.current_view = "activities"
-            self.calendar_ui = None  # Clear calendar reference
+            self.calendar_ui = None  # Clearing calendar reference
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Could not switch to activities view: {str(e)}")
 
@@ -513,7 +536,7 @@ class MainApplication(QMainWindow):
         try:
             self.add_event_manager.setup_add_event_view()
             self.current_view = "add_event"
-            self.calendar_ui = None  # Clear calendar reference
+            self.calendar_ui = None  # Clearing calendar reference
             self.setWindowTitle("Campus Event Manager - Add Event")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Could not switch to add event view: {str(e)}")
@@ -631,7 +654,8 @@ def main():
     app.setApplicationName("Campus Event Manager")
     
     # Create and show main window with Calendar UI
-    main_window = MainApplication(user_role="admin")
+    # NOTE roles (Admin)(Organization)(Faculty)(Student)
+    main_window = MainApplication(user_role="Student")
     main_window.setWindowTitle("Campus Event Manager")
     main_window.show()
     
