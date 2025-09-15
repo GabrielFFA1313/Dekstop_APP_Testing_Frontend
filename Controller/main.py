@@ -28,8 +28,13 @@ class MainApplication(QMainWindow):
         self.current_view = "calendar"  # Track current view
         self.current_date = QDate.currentDate()  # Track current date
         
-        # Initialize event manager
-        self.event_manager = EventManager(main_app=self)
+        # Initialize event manager with correct JSON path
+        # Get the path to the mock folder relative to this file
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        mock_dir = os.path.join(os.path.dirname(current_dir), 'mock')
+        json_file_path = os.path.join(mock_dir, 'demo_events.json')
+        
+        self.event_manager = EventManager(main_app=self, json_file_path=json_file_path)
         
         #NOTE  Initialize view managers
 #       activities.py

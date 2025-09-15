@@ -1,4 +1,4 @@
-# ADD_EVENT_MANAGER.PY - Handles both add and edit event functionality (UPDATED)
+# ADD_EVENT_MANAGER.PY - Handles add and edit event functionality with CRUD operations
 from PyQt6.QtWidgets import QMessageBox, QDialog
 from PyQt6.QtCore import QDate, QTime, Qt, QTimer
 from PyQt6 import QtWidgets, QtGui, QtCore
@@ -9,7 +9,7 @@ from UI.edit_event import Ui_MainWindow as EditEventUi
 
 
 class AddEventManager:
-    """Manager class for handling both add and edit event functionality in the same window"""
+    """Manager class for handling both add and edit event functionality with CRUD operations"""
     
     def __init__(self, main_app, event_manager):
         self.main_app = main_app
@@ -29,6 +29,7 @@ class AddEventManager:
         self.mode = "edit"
         self.edit_event_data = event_data
         self._setup_event_view(EditEventUi)
+    
     # NOTE the geometry helps with the window size
     def _setup_event_view(self, ui_class):
         """Common setup for both add and edit event views"""
@@ -299,6 +300,10 @@ class AddEventManager:
             import traceback
             traceback.print_exc()
 
+    # =========================
+    # CRUD CREATE/UPDATE OPERATIONS
+    # =========================
+    
     def save_event(self):
         """Handle save or update event action based on current mode"""
         try:
@@ -317,10 +322,10 @@ class AddEventManager:
             
             # Save or update based on mode
             if self.mode == "add":
-                success = self.save_new_event(event_data)
-                action = "saved"
+                success = self.create_event(event_data)
+                action = "created"
             else:  # edit mode
-                success = self.update_existing_event(event_data)
+                success = self.update_event(event_data)
                 action = "updated"
             
             if success:
@@ -345,33 +350,124 @@ class AddEventManager:
             traceback.print_exc()
             QMessageBox.critical(self.main_app, "Error", f"Could not {self.mode} event: {str(e)}")
 
-    def save_new_event(self, event_data):
-        """Save a new event"""
-        if self.event_manager:
-            return self.save_to_event_manager(event_data)
-        else:
-            # No event manager available - show info message
-            QMessageBox.information(
-                self.main_app,
-                "Event Created",
-                f"Event '{event_data['title']}' would be saved.\n\n" +
-                f"Type: {event_data['type']}\n" +
-                f"Date: {event_data['start_date'].toString('MMM dd, yyyy')}\n" +
-                f"Time: {event_data['start_time'].toString('hh:mm AP')}"
-            )
-            return True
+    def create_event(self, event_data):
+        """CREATE - Add a new event"""
+        try:
+            # Validate required fields
+            if not event_data.get('title', '').strip():
+                raise ValueError("Event title is required")
+            
+            if not event_data.get('start_date'):
+                raise ValueError("Event date is required")
+            
+            # Extract data
+            title = event_data['title'].strip()
+            date = event_data['start_date']
+            category = self.determine_category_from_event_type(event_data.get('type', 'Academic'))
+            
+            # Validate date
+            if not isinstance(date, QDate):
+                raise ValueError("Date must be a QDate object")
+            
+            # Add to event manager memory
+            self.event_manager.add_event_to_memory(date, title, category)
+            
+            # Save to JSON
+            if self.event_manager.save_to_json():
+                # Refresh display
+                self.refresh_displays()
+                
+                print(f"Event created: {title} on {self.event_manager.date_to_string(date)}")
+                return True
+            else:
+                # Rollback on save failure
+                self.event_manager.remove_event_from_memory(date, title)
+                raise Exception("Failed to save event to JSON file")
+                
+        except Exception as e:
+            print(f"Error creating event: {e}")
+            return False
+    
+    def update_event(self, updated_data):
+        """UPDATE - Update an existing event"""
+        try:
+            if not self.edit_event_data:
+                raise ValueError("No original event data for update")
+            
+            # Get original data
+            original_title = self.edit_event_data.get('title', '').strip()
+            original_date = self.edit_event_data.get('date')
+            
+            if not original_title or not original_date:
+                raise ValueError("Original event data is incomplete")
+            
+            # Get updated values
+            new_title = updated_data.get('title', original_title).strip()
+            new_category = self.determine_category_from_event_type(updated_data.get('type', 'Academic'))
+            new_date = updated_data.get('start_date', original_date)
+            
+            if not new_title:
+                raise ValueError("Updated title cannot be empty")
+            
+            # Store backup for rollback
+            backup_events = {}
+            if original_date in self.event_manager._event_map:
+                backup_events[original_date] = self.event_manager._event_map[original_date][:]
+            if new_date != original_date and new_date in self.event_manager._event_map:
+                backup_events[new_date] = self.event_manager._event_map[new_date][:]
+            
+            try:
+                # Remove original event
+                self.event_manager.remove_event_from_memory(original_date, original_title)
+                
+                # Add updated event
+                self.event_manager.add_event_to_memory(new_date, new_title, new_category)
+                
+                # Save to JSON
+                if self.event_manager.save_to_json():
+                    # Refresh display
+                    self.refresh_displays()
+                    
+                    print(f"Event updated: {original_title} -> {new_title}")
+                    return True
+                else:
+                    raise Exception("Failed to save changes to JSON file")
+                    
+            except Exception as save_error:
+                # Rollback changes
+                for date, events in backup_events.items():
+                    self.event_manager._event_map[date] = events
+                raise save_error
+                
+        except Exception as e:
+            print(f"Error updating event: {e}")
+            return False
 
-    def update_existing_event(self, event_data):
-        """Update an existing event"""
-        if self.event_manager and hasattr(self.event_manager, 'update_event'):
-            # If event manager has update method
-            return self.event_manager.update_event(self.edit_event_data, event_data)
-        elif self.event_manager:
-            # Fallback: use save method for now
-            return self.save_to_event_manager(event_data)
-        else:
-            # No event manager - simulate success
-            return True
+    def determine_category_from_event_type(self, event_type):
+        """Convert UI event type to EventManager category"""
+        category_map = {
+            "Academic": "Academic",
+            "Organizational": "Organizational",
+            "Deadline": "Deadline", 
+            "Holiday": "Holiday"
+        }
+        return category_map.get(event_type, "Academic")
+
+    def refresh_displays(self):
+        """Refresh all displays after event changes"""
+        try:
+            # Refresh event manager displays
+            self.event_manager.refresh_events_display()
+            
+            # Refresh upcoming events in current view
+            self.populate_upcoming_events()
+            
+            # Refresh activities manager if available
+            if hasattr(self.main_app, 'activities_manager'):
+                self.main_app.activities_manager.refresh_activities()
+                
+        except Exception as e:
+            print(f"Error refreshing displays: {e}")
 
     def get_form_data(self):
         """Extract data from the form"""
@@ -450,53 +546,6 @@ class AddEventManager:
             return {'valid': False, 'message': 'Please select at least one target audience.'}
         
         return {'valid': True, 'message': 'Validation passed.'}
-
-    def save_to_event_manager(self, event_data):
-        """Save event data to the event manager"""
-        try:
-            if not self.event_manager:
-                return False
-            
-            # Convert event type to match event manager categories
-            category_map = {
-                "Academic": "Academic",
-                "Organizational": "Organizational",
-                "Deadline": "Deadline", 
-                "Holiday": "Holiday"
-            }
-            
-            category = category_map.get(event_data['type'], "Academic")
-            
-            # Add the event to event manager
-            # Assuming event manager has an add_event method
-            if hasattr(self.event_manager, 'add_event'):
-                success = self.event_manager.add_event(
-                    title=event_data['title'],
-                    category=category,
-                    date=event_data['start_date'],
-                    description=event_data['description'],
-                    location=event_data['location'],
-                    start_time=event_data['start_time'],
-                    end_time=event_data['end_time'],
-                    target_audience=event_data['target_audience']
-                )
-                return success
-            else:
-                # If no add_event method, try a basic approach
-                # This assumes the event manager uses a dictionary structure
-                events_dict = self.event_manager.get_events()
-                date_key = event_data['start_date']
-                
-                if date_key not in events_dict:
-                    events_dict[date_key] = []
-                
-                events_dict[date_key].append((event_data['title'], category))
-                return True
-                
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            return False
 
     def clear_form(self):
         """Clear all form fields"""

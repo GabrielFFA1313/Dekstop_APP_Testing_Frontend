@@ -1,0 +1,354 @@
+{
+  "events": {
+    "2025-08-04": [
+      {
+        "title": "Start of Classes",
+        "category": "Academic"
+      }
+    ],
+    "2025-08-12": [
+      {
+        "title": "Organization Expo",
+        "category": "Organizational"
+      }
+    ],
+    "2025-08-15": [
+      {
+        "title": "Assignment #1 Due",
+        "category": "Deadline"
+      }
+    ],
+    "2025-08-19": [
+      {
+        "title": "Project Milestone 1",
+        "category": "Deadline"
+      }
+    ],
+    "2025-08-21": [
+      {
+        "title": "Ninoy Aquino Day",
+        "category": "Holiday"
+      }
+    ],
+    "2025-08-25": [
+      {
+        "title": "Programming Assignment Due",
+        "category": "Deadline"
+      }
+    ],
+    "2025-08-30": [
+      {
+        "title": "National Heroes Day",
+        "category": "Holiday"
+      }
+    ],
+    "2025-09-01": [
+      {
+        "title": "New Semester Orientation",
+        "category": "Academic"
+      }
+    ],
+    "2025-09-03": [
+      {
+        "title": "Faculty Meeting",
+        "category": "Academic"
+      }
+    ],
+    "2025-09-05": [
+      {
+        "title": "Math Exam",
+        "category": "Academic"
+      }
+    ],
+    "2025-09-08": [
+      {
+        "title": "Student Council Elections",
+        "category": "Organizational"
+      }
+    ],
+    "2025-09-10": [
+      {
+        "title": "Computer Science Club Meeting",
+        "category": "Organizational"
+      }
+    ],
+    "2025-09-12": [
+      {
+        "title": "Research Paper Draft Due",
+        "category": "Deadline"
+      }
+    ],
+    "2025-09-15": [
+      {
+        "title": "Midterm Exam Period Starts",
+        "category": "Academic"
+      }
+    ],
+    "2025-09-27": [
+      {
+        "title": "Career Fair",
+        "category": "Organizational"
+      }
+    ],
+    "2025-10-02": [
+      {
+        "title": "Software Engineering Workshop",
+        "category": "Academic"
+      }
+    ],
+    "2025-10-05": [
+      {
+        "title": "Hackathon 2025",
+        "category": "Organizational"
+      }
+    ],
+    "2025-10-10": [
+      {
+        "title": "Thesis Defense - Group A",
+        "category": "Academic"
+      }
+    ],
+    "2025-10-12": [
+      {
+        "title": "AI/ML Workshop",
+        "category": "Academic"
+      }
+    ],
+    "2025-10-15": [
+      {
+        "title": "Student Council Meeting",
+        "category": "Organizational"
+      }
+    ],
+    "2025-10-17": [
+      {
+        "title": "Final Project Proposal Due",
+        "category": "Deadline"
+      }
+    ],
+    "2025-10-18": [
+      {
+        "title": "Cybersecurity Awareness Day",
+        "category": "Academic"
+      }
+    ],
+    "2025-10-20": [
+      {
+        "title": "Tech Talk: Industry Trends",
+        "category": "Academic"
+      }
+    ],
+    "2025-10-22": [
+      {
+        "title": "Alumni Homecoming",
+        "category": "Organizational"
+      }
+    ],
+    "2025-10-25": [
+      {
+        "title": "Code Review Session",
+        "category": "Academic"
+      }
+    ],
+    "2025-10-28": [
+      {
+        "title": "Halloween Costume Contest",
+        "category": "Organizational"
+      }
+    ],
+    "2025-10-30": [
+      {
+        "title": "All Saints' Day Break",
+        "category": "Holiday"
+      }
+    ],
+    "2025-11-01": [
+      {
+        "title": "All Saints' Day",
+        "category": "Holiday"
+      }
+    ],
+    "2025-11-03": [
+      {
+        "title": "System Analysis Final Project Due",
+        "category": "Deadline"
+      }
+    ],
+    "2025-11-05": [
+      {
+        "title": "Mobile App Development Contest",
+        "category": "Organizational"
+      }
+    ],
+    "2025-11-08": [
+      {
+        "title": "Computer Graphics Exhibition",
+        "category": "Academic"
+      }
+    ],
+    "2025-11-10": [
+      {
+        "title": "Network Security Assessment",
+        "category": "Academic"
+      }
+    ],
+    "2025-11-12": [
+      {
+        "title": "IT Research Conference",
+        "category": "Academic"
+      }
+    ],
+    "2025-11-15": [
+      {
+        "title": "Pre-Finals Review Session",
+        "category": "Academic"
+      }
+    ],
+    "2025-11-18": [
+      {
+        "title": "Capstone Project Showcase",
+        "category": "Academic"
+      }
+    ],
+    "2025-11-20": [
+      {
+        "title": "Industry Partnership Forum",
+        "category": "Organizational"
+      }
+    ],
+    "2025-11-22": [
+      {
+        "title": "Thanksgiving Break Starts",
+        "category": "Holiday"
+      }
+    ],
+    "2025-11-25": [
+      {
+        "title": "Final Exam Schedule Release",
+        "category": "Academic"
+      }
+    ],
+    "2025-11-28": [
+      {
+        "title": "Study Week Begins",
+        "category": "Academic"
+      }
+    ],
+    "2025-12-02": [
+      {
+        "title": "Finals Week - Day 1",
+        "category": "Academic"
+      }
+    ],
+    "2025-12-05": [
+      {
+        "title": "Database Systems Final Exam",
+        "category": "Academic"
+      }
+    ],
+    "2025-12-08": [
+      {
+        "title": "Software Engineering Final Project",
+        "category": "Academic"
+      }
+    ],
+    "2025-12-10": [
+      {
+        "title": "Web Development Portfolio Due",
+        "category": "Deadline"
+      }
+    ],
+    "2025-12-12": [
+      {
+        "title": "Last Day of Classes",
+        "category": "Academic"
+      }
+    ],
+    "2025-12-15": [
+      {
+        "title": "Grade Submission Deadline",
+        "category": "Deadline"
+      }
+    ],
+    "2025-12-18": [
+      {
+        "title": "Christmas Party",
+        "category": "Organizational"
+      }
+    ],
+    "2025-12-20": [
+      {
+        "title": "Winter Break Starts",
+        "category": "Holiday"
+      }
+    ],
+    "2025-12-25": [
+      {
+        "title": "Christmas Day",
+        "category": "Holiday"
+      }
+    ],
+    "2025-12-30": [
+      {
+        "title": "Rizal Day",
+        "category": "Holiday"
+      }
+    ],
+    "2025-06-30": [
+      {
+        "title": "End of Quarter Assessment",
+        "category": "Organizational"
+      }
+    ],
+    "2025-11-30": [
+      {
+        "title": "Bonifacio Day1",
+        "category": "Holiday"
+      }
+    ],
+    "2025-06-18": [
+      {
+        "title": "Database Systems Test",
+        "category": "Organizational"
+      }
+    ],
+    "2025-08-22": [
+      {
+        "title": "Programming Contes",
+        "category": "Organizational"
+      }
+    ],
+    "2025-09-25": [
+      {
+        "title": "Project Presentatio",
+        "category": "Academic"
+      }
+    ],
+    "2025-09-17": [
+      {
+        "title": "Testing 10",
+        "category": "Academic"
+      }
+    ],
+    "2025-09-16": [
+      {
+        "title": "testing 1",
+        "category": "Organizational"
+      },
+      {
+        "title": "hi 23",
+        "category": "Holiday"
+      }
+    ],
+    "2025-10-08": [
+      {
+        "title": "Web Development Semina",
+        "category": "Academic"
+      }
+    ]
+  },
+  "metadata": {
+    "last_updated": "2025-09-16T01:39:55.701750",
+    "total_events": 58
+  }
+}

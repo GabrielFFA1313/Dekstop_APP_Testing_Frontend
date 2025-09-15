@@ -1,4 +1,4 @@
-# ACTIVITIES_MANAGER.PY - Handles all activities view functionality (UPDATED with Event Form Manager)
+# ACTIVITIES_MANAGER.PY - Handles activities view functionality (listing and deleting only)
 from PyQt6.QtWidgets import QMessageBox, QWidget, QHBoxLayout, QPushButton
 from PyQt6.QtCore import QDate, QTimer, Qt
 from PyQt6 import QtWidgets, QtGui, QtCore
@@ -7,13 +7,14 @@ from UI.activities import Ui_MainWindow
 
 
 class ActivitiesManager:
-    """Manager class for handling activities view functionality"""
+    """Manager class for handling activities view functionality (listing and deleting)"""
     
     def __init__(self, main_app, event_manager):
         self.main_app = main_app
         self.event_manager = event_manager
         self.activities_ui = None
         self.all_activities = []
+    
     # NOTE the geometry helps with the window size
     def setup_activities_view(self):
         """Setup the activities view as the main content"""
@@ -112,7 +113,7 @@ class ActivitiesManager:
                     pass
                 self.activities_ui.btnback.clicked.connect(self.go_back_to_calendar)
             
-            # Connect Add Event button - UPDATED TO ALLOW ORG AND FACULTY TO ADD EVENTS
+            # Connect Add Event button - Navigate to AddEventManager
             if hasattr(self.activities_ui, 'btnAddEvent'):
                 if self.can_add_activities():
                     try:
@@ -166,7 +167,7 @@ class ActivitiesManager:
             # Convert events to activities format
             for date, events in all_events_dict.items():
                 for title, category in events:
-                    # Create activity entry (removed status field)
+                    # Create activity entry
                     activity = {
                         'date': date,
                         'title': title,
@@ -176,8 +177,21 @@ class ActivitiesManager:
                     }
                     all_activities.append(activity)
             
-            # Sort activities by date (most recent first)
-            all_activities.sort(key=lambda x: x['date'], reverse=True)
+            # Sort activities to show upcoming events first in proper chronological order
+            current_date = QDate.currentDate()
+            
+            # Separate upcoming and past events
+            upcoming_activities = [activity for activity in all_activities if activity['date'] >= current_date]
+            past_activities = [activity for activity in all_activities if activity['date'] < current_date]
+            
+            # Sort upcoming events chronologically (EARLIEST first: Sept 16, then Sept 18, then Sept 22, then Sept 30)
+            upcoming_activities.sort(key=lambda x: x['date'])
+            
+            # Sort past events reverse chronologically (most recent past first)  
+            past_activities.sort(key=lambda x: x['date'], reverse=True)
+            
+            # Combine: upcoming first, then past
+            all_activities = upcoming_activities + past_activities
             
             # Store all activities for filtering
             self.all_activities = all_activities
@@ -228,7 +242,11 @@ class ActivitiesManager:
             table = self.activities_ui.activitiesTable
             
             # Disable sorting temporarily to avoid issues during population
-            table.setSortingEnabled(False)
+            try:
+                table.setSortingEnabled(False)
+            except RuntimeError:
+                print("Table widget has been deleted, skipping population")
+                return
             
             # Set the number of rows
             table.setRowCount(len(activities_list))
@@ -260,7 +278,7 @@ class ActivitiesManager:
                 location_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 table.setItem(row, 3, location_item)
                 
-                # Actions - Create Edit/Delete buttons only for authorized users using UI method
+                # Actions - Create Edit/Delete buttons only for authorized users
                 if show_actions and hasattr(self.activities_ui, 'create_action_buttons'):
                     action_buttons = self.activities_ui.create_action_buttons(
                         row, 
@@ -270,18 +288,101 @@ class ActivitiesManager:
                     if action_buttons:  # Only set if buttons were created
                         table.setCellWidget(row, 4, action_buttons)
             
-            # Re-enable sorting
-            table.setSortingEnabled(True)
-            
-            # Sort by date by default (column 0) - most recent first
-            table.sortItems(0, Qt.SortOrder.DescendingOrder)
+            # Re-enable sorting but keep our custom order
+            table.setSortingEnabled(False)  # Disable to preserve our custom sorting order
             
         except Exception as e:
             import traceback
             traceback.print_exc()
 
+    # =========================
+    # DELETE OPERATION (Fixed)
+    # =========================
+    
+    def delete_activity(self, row):
+        """DELETE - Delete an activity (FIXED to work with simplified EventManager)"""
+        try:
+            # Check permission first
+            if not self.can_edit_activities():
+                QMessageBox.warning(
+                    self.main_app,
+                    "Access Denied",
+                    "You do not have permission to delete activities."
+                )
+                return False
+                
+            if not hasattr(self.activities_ui, 'activitiesTable'):
+                return False
+                
+            if row >= len(self.all_activities):
+                raise ValueError("Invalid activity row")
+                
+            # Get activity data
+            activity_data = self.all_activities[row]
+            title = activity_data['title']
+            date = activity_data['date']
+            category = activity_data['category']
+            
+            # Confirm deletion
+            reply = QMessageBox.question(
+                self.main_app,
+                "Delete Activity",
+                f"Are you sure you want to delete this activity?\n\n"
+                f"Event: {title}\n"
+                f"Type: {category}\n"
+                f"Date: {date.toString('MMM dd, yyyy')}\n\n"
+                f"This action cannot be undone.",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No
+            )
+            
+            if reply == QMessageBox.StandardButton.Yes:
+                # Store backup for rollback
+                backup_events = self.event_manager.get_events_for_date(date)[:]
+                
+                try:
+                    # Remove from event manager memory
+                    self.event_manager.remove_event_from_memory(date, title)
+                    
+                    # Save to JSON
+                    if self.event_manager.save_to_json():
+                        # Refresh display
+                        self.refresh_activities()
+                        self.event_manager.refresh_events_display()
+                        
+                        QMessageBox.information(
+                            self.main_app,
+                            "Activity Deleted",
+                            f"Activity '{title}' has been deleted successfully."
+                        )
+                        
+                        print(f"Activity deleted: {title} on {self.event_manager.date_to_string(date)}")
+                        return True
+                    else:
+                        raise Exception("Failed to save changes to JSON file")
+                        
+                except Exception as save_error:
+                    # Rollback - restore the original events for that date
+                    self.event_manager.set_events_for_date(date, backup_events)
+                    raise save_error
+            
+            return False
+                
+        except Exception as e:
+            print(f"Error deleting activity: {e}")
+            QMessageBox.critical(
+                self.main_app,
+                "Delete Activity Failed",
+                f"Failed to delete activity: {str(e)}"
+            )
+            return False
+    
+    # =========================
+    # UI EVENT HANDLERS
+    # =========================
+    
     def edit_activity(self, row):
-        """Handle edit activity action - UPDATED TO USE ADD EVENT MANAGER"""
+        """Handle edit activity action - Simple routing to AddEventManager"""
         try:
             # Check permission first
             if not self.can_edit_activities():
@@ -292,129 +393,64 @@ class ActivitiesManager:
                 )
                 return
                 
-            if not hasattr(self.activities_ui, 'activitiesTable'):
+            if row >= len(self.all_activities):
                 return
                 
-            table = self.activities_ui.activitiesTable
+            # Get the activity data
+            activity_data = self.all_activities[row]
             
-            # Get activity details from the row
-            date_time_item = table.item(row, 0)
-            event_item = table.item(row, 1)
-            type_item = table.item(row, 2)
-            location_item = table.item(row, 3)
+            # Prepare minimal edit data - AddEventManager will handle the rest
+            edit_data = {
+                'title': activity_data['title'],
+                'category': activity_data['category'],
+                'date': activity_data['date'],
+                'location': activity_data['location'],
+                'time': activity_data['time']
+            }
             
-            if event_item and row < len(self.all_activities):
-                # Get the activity data from our stored list
-                activity_data = self.all_activities[row]
-                
-                # Prepare event data for editing
-                edit_data = {
-                    'title': activity_data['title'],
-                    'category': activity_data['category'],
-                    'type': activity_data['category'],  # Same as category
-                    'location': activity_data['location'],
-                    'date': activity_data['date'],
-                    'time': activity_data['time'],
-                    'description': '',  # Default empty description
-                    'target_audience': ['All']  # Default target audience
-                }
-                
-                # Use the main app's add event manager to show edit view
-                if hasattr(self.main_app, 'add_event_manager'):
-                    self.main_app.add_event_manager.setup_edit_event_view(edit_data)
-                elif hasattr(self.main_app, 'show_edit_event_view'):
-                    self.main_app.show_edit_event_view(edit_data)
-                else:
-                    # Fallback: Show a message with the activity details
-                    QMessageBox.information(
-                        self.main_app,
-                        "Edit Activity",
-                        f"Edit functionality for:\n\n"
-                        f"Event: {activity_data['title']}\n"
-                        f"Type: {activity_data['category']}\n"
-                        f"Location: {activity_data['location']}\n"
-                        f"Date: {activity_data['date'].toString('MMM dd, yyyy')}\n\n"
-                        f"Add Event Manager needs to be connected to main app."
-                    )
+            # Route to AddEventManager (which handles both add and edit)
+            if hasattr(self.main_app, 'add_event_manager'):
+                self.main_app.add_event_manager.setup_edit_event_view(edit_data)
+            else:
+                QMessageBox.warning(
+                    self.main_app,
+                    "Error",
+                    "AddEventManager not available. Please check main app setup."
+                )
                 
         except Exception as e:
-            import traceback
-            traceback.print_exc()
-            QMessageBox.critical(self.main_app, "Error", f"Could not edit activity: {str(e)}")
+            print(f"Error routing to edit: {e}")
+            QMessageBox.critical(self.main_app, "Error", f"Could not open edit view: {str(e)}")
 
-    def delete_activity(self, row):
-        """Handle delete activity action"""
+    def show_add_event(self):
+        """Show the add event interface - Navigate to AddEventManager"""
         try:
             # Check permission first
-            if not self.can_edit_activities():
+            if not self.can_add_activities():
                 QMessageBox.warning(
                     self.main_app,
                     "Access Denied",
-                    "You do not have permission to delete activities."
+                    "You do not have permission to add new activities."
                 )
                 return
                 
-            if not hasattr(self.activities_ui, 'activitiesTable'):
-                return
-                
-            table = self.activities_ui.activitiesTable
-            
-            # Get activity details from the row
-            event_item = table.item(row, 1)
-            type_item = table.item(row, 2)
-            
-            if event_item and row < len(self.all_activities):
-                activity_data = self.all_activities[row]
-                activity_name = activity_data['title']
-                activity_type = activity_data['category']
-                
-                # Confirm deletion
-                reply = QMessageBox.question(
-                    self.main_app,
-                    "Delete Activity",
-                    f"Are you sure you want to delete this activity?\n\n"
-                    f"Event: {activity_name}\n"
-                    f"Type: {activity_type}\n\n"
-                    f"This action cannot be undone.",
-                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                    QMessageBox.StandardButton.No
+            # Use the main app's add event manager to show add event view
+            if hasattr(self.main_app, 'add_event_manager'):
+                self.main_app.add_event_manager.setup_add_event_view()
+            elif hasattr(self.main_app, 'show_add_event_view'):
+                self.main_app.show_add_event_view()
+            else:
+                # Fallback message if the method doesn't exist
+                QMessageBox.information(
+                    self.main_app, 
+                    "Add Event", 
+                    "Add Event functionality requires the Add Event Manager to be connected to the main application.\n\nPlease ensure the main application has been updated with the Add Event Manager."
                 )
-                
-                if reply == QMessageBox.StandardButton.Yes:
-                    # TODO: Implement actual delete functionality with event manager
-                    if self.event_manager and hasattr(self.event_manager, 'delete_event'):
-                        # If event manager has delete method
-                        success = self.event_manager.delete_event(activity_data)
-                        if success:
-                            QMessageBox.information(
-                                self.main_app,
-                                "Activity Deleted",
-                                f"Activity '{activity_name}' has been deleted successfully."
-                            )
-                        else:
-                            QMessageBox.warning(
-                                self.main_app,
-                                "Delete Failed",
-                                f"Failed to delete activity '{activity_name}'. Please try again."
-                            )
-                    else:
-                        # Fallback: just remove from table and show info
-                        table.removeRow(row)
-                        
-                        QMessageBox.information(
-                            self.main_app,
-                            "Activity Deleted",
-                            f"Activity '{activity_name}' has been removed from the list.\n\n"
-                            f"Note: Actual database deletion functionality needs to be implemented."
-                        )
-                    
-                    # Refresh the activities list
-                    self.refresh_activities()
                 
         except Exception as e:
             import traceback
             traceback.print_exc()
-            QMessageBox.critical(self.main_app, "Error", f"Could not delete activity: {str(e)}")
+            QMessageBox.critical(self.main_app, "Error", f"Could not show add event interface: {str(e)}")
 
     def get_category_color(self, category):
         """Get background color for event category"""
@@ -458,8 +494,12 @@ class ActivitiesManager:
             # Get upcoming events from event manager
             upcoming_events = self.event_manager.get_upcoming_events("All", limit=10)
             
-            # Clear the existing list
-            self.activities_ui.listUpcoming.clear()
+            # Clear the existing list with error handling
+            try:
+                self.activities_ui.listUpcoming.clear()
+            except RuntimeError:
+                print("ListUpcoming widget has been deleted, skipping population")
+                return
             
             # Add events to the upcoming events list
             for date, title, category in upcoming_events:
@@ -502,8 +542,12 @@ class ActivitiesManager:
             filter_category = filter_map.get(filter_text, "All")
             upcoming_events = self.event_manager.get_upcoming_events(filter_category, limit=10)
             
-            # Clear and repopulate the list
-            self.activities_ui.listUpcoming.clear()
+            # Clear and repopulate the list with error handling
+            try:
+                self.activities_ui.listUpcoming.clear()
+            except RuntimeError:
+                print("ListUpcoming widget has been deleted, skipping filter")
+                return
             
             for date, title, category in upcoming_events:
                 formatted_date = date.toString("MMM dd, yyyy")
@@ -524,36 +568,6 @@ class ActivitiesManager:
             import traceback
             traceback.print_exc()
 
-    def show_add_event(self):
-        """Show the add event interface - UPDATED TO USE ADD EVENT MANAGER"""
-        try:
-            # Check permission first
-            if not self.can_add_activities():
-                QMessageBox.warning(
-                    self.main_app,
-                    "Access Denied",
-                    "You do not have permission to add new activities."
-                )
-                return
-                
-            # Use the main app's add event manager to show add event view
-            if hasattr(self.main_app, 'add_event_manager'):
-                self.main_app.add_event_manager.setup_add_event_view()
-            elif hasattr(self.main_app, 'show_add_event_view'):
-                self.main_app.show_add_event_view()
-            else:
-                # Fallback message if the method doesn't exist
-                QMessageBox.information(
-                    self.main_app, 
-                    "Add Event", 
-                    "Add Event functionality requires the Add Event Manager to be connected to the main application.\n\nPlease ensure the main application has been updated with the Add Event Manager."
-                )
-                
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            QMessageBox.critical(self.main_app, "Error", f"Could not show add event interface: {str(e)}")
-
     def go_back_to_calendar(self):
         """Return to calendar from activities"""
         try:
@@ -568,6 +582,8 @@ class ActivitiesManager:
         try:
             self.load_activities_data()
             self.populate_activities_upcoming_events()
+        except RuntimeError as e:
+            print(f"Runtime error during activities refresh (widget deleted): {e}")
         except Exception as e:
             import traceback
             traceback.print_exc()

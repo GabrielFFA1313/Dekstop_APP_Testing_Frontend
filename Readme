@@ -8,6 +8,7 @@ UI - All the layout files of the application some have thier own controller some
 
 TODO
 - Database paging
-- Edit
-- Add
-- Delete
+- Edit (Almost?)
+- Add (Almost?)
+- Delete (Almost?)
+- Json File (Done)
