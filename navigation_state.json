@@ -1,0 +1,296 @@
+{
+  "current_route": {
+    "view": "add_event",
+    "params": {}
+  },
+  "navigation_history": [
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T14:12:47.892018"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T14:12:51.972065"
+    },
+    {
+      "view": "activities",
+      "params": {},
+      "timestamp": "2025-09-17T14:12:52.848790"
+    },
+    {
+      "view": "add_event",
+      "params": {},
+      "timestamp": "2025-09-17T14:12:59.446976"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T14:13:01.340577"
+    },
+    {
+      "view": "activities",
+      "params": {},
+      "timestamp": "2025-09-17T14:13:02.091489"
+    },
+    {
+      "view": "edit_event",
+      "params": {
+        "event_data": {
+          "title": "testint 69696",
+          "category": "Academic",
+          "date": "2025-09-17",
+          "location": "Main Building",
+          "time": "12:00 PM"
+        }
+      },
+      "timestamp": "2025-09-17T14:13:17.690835"
+    },
+    {
+      "view": "edit_event",
+      "params": {
+        "event_data": {
+          "title": "testint 69696",
+          "category": "Academic",
+          "date": "2025-09-17",
+          "location": "Main Building",
+          "time": "12:00 PM"
+        }
+      },
+      "timestamp": "2025-09-17T14:13:20.567863"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T14:13:24.165214"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T14:13:28.180845"
+    },
+    {
+      "view": "activities",
+      "params": {},
+      "timestamp": "2025-09-17T14:13:28.908731"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T14:13:30.396094"
+    },
+    {
+      "view": "activities",
+      "params": {},
+      "timestamp": "2025-09-17T14:13:34.059829"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T14:15:02.005531"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T14:15:04.376596"
+    },
+    {
+      "view": "activities",
+      "params": {},
+      "timestamp": "2025-09-17T14:15:05.543560"
+    },
+    {
+      "view": "add_event",
+      "params": {},
+      "timestamp": "2025-09-17T14:15:06.626286"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T14:15:07.452513"
+    },
+    {
+      "view": "activities",
+      "params": {},
+      "timestamp": "2025-09-17T14:15:08.231231"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T14:15:08.887202"
+    },
+    {
+      "view": "activities",
+      "params": {},
+      "timestamp": "2025-09-17T14:15:10.369925"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T14:15:11.471064"
+    },
+    {
+      "view": "day_view",
+      "params": {
+        "date": "2025-09-17"
+      },
+      "timestamp": "2025-09-17T14:15:19.601599"
+    },
+    {
+      "view": "day_view",
+      "params": {
+        "date": "2025-09-17"
+      },
+      "timestamp": "2025-09-17T14:15:44.863766"
+    },
+    {
+      "view": "day_view",
+      "params": {
+        "date": "2025-09-17"
+      },
+      "timestamp": "2025-09-17T14:15:50.019196"
+    },
+    {
+      "view": "calendar",
+      "params": {
+        "selected_date": "2025-09-17"
+      },
+      "timestamp": "2025-09-17T14:15:50.719729"
+    },
+    {
+      "view": "activities",
+      "params": {},
+      "timestamp": "2025-09-17T14:15:56.016739"
+    },
+    {
+      "view": "activities",
+      "params": {},
+      "timestamp": "2025-09-17T14:16:08.697234"
+    },
+    {
+      "view": "activities",
+      "params": {},
+      "timestamp": "2025-09-17T14:16:11.222100"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T14:16:11.928041"
+    },
+    {
+      "view": "activities",
+      "params": {},
+      "timestamp": "2025-09-17T14:16:12.577252"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T14:16:13.432938"
+    },
+    {
+      "view": "activities",
+      "params": {},
+      "timestamp": "2025-09-17T14:16:19.815122"
+    },
+    {
+      "view": "activities",
+      "params": {},
+      "timestamp": "2025-09-17T14:16:23.155088"
+    },
+    {
+      "view": "add_event",
+      "params": {},
+      "timestamp": "2025-09-17T14:16:24.159813"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T14:16:24.937289"
+    },
+    {
+      "view": "activities",
+      "params": {},
+      "timestamp": "2025-09-17T14:16:25.850579"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T14:16:36.248078"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T14:16:37.563551"
+    },
+    {
+      "view": "activities",
+      "params": {},
+      "timestamp": "2025-09-17T14:17:09.300865"
+    },
+    {
+      "view": "activities",
+      "params": {},
+      "timestamp": "2025-09-17T14:17:11.068367"
+    },
+    {
+      "view": "add_event",
+      "params": {},
+      "timestamp": "2025-09-17T14:17:32.431344"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T14:17:41.044358"
+    },
+    {
+      "view": "activities",
+      "params": {},
+      "timestamp": "2025-09-17T14:17:41.434628"
+    },
+    {
+      "view": "add_event",
+      "params": {},
+      "timestamp": "2025-09-17T14:18:11.411991"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T14:21:15.962618"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T14:21:17.516887"
+    },
+    {
+      "view": "activities",
+      "params": {},
+      "timestamp": "2025-09-17T14:21:18.009175"
+    }
+  ],
+  "view_states": {
+    "calendar": {
+      "selected_date": "2025-09-17",
+      "filter_selection": "All Events"
+    },
+    "activities": {
+      "activity_filter": "All Events",
+      "upcoming_filter": "All Events"
+    },
+    "add_event": {
+      "mode": "add"
+    },
+    "edit_event": {
+      "mode": "add"
+    },
+    "day_view": {
+      "current_date": "2025-09-17",
+      "filter_selection": "All Events"
+    }
+  },
+  "metadata": {
+    "last_updated": "2025-09-17T14:21:18.009175",
+    "app_version": "1.0"
+  }
+}

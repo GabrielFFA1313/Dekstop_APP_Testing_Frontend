@@ -1,4 +1,4 @@
-# ADD_EVENT_MANAGER.PY - Backend logic for add/edit event functionality with CRUD operations
+# ADD_EVENT_MANAGER.PY - Backend logic for add/edit event functionality with CRUD operations - Router Compatible
 from PyQt6.QtWidgets import QMessageBox, QDialog
 from PyQt6.QtCore import QDate, QTime, Qt, QTimer
 from PyQt6 import QtWidgets, QtGui, QtCore
@@ -10,7 +10,7 @@ from Controller.add_event_controller import AddEventController
 
 
 class AddEventManager:
-    """Manager class for handling both add and edit event business logic with CRUD operations"""
+    """Manager class for handling both add and edit event business logic with CRUD operations - Router Compatible"""
     
     def __init__(self, main_app, event_manager):
         self.main_app = main_app
@@ -20,33 +20,22 @@ class AddEventManager:
         self.edit_event_data = None
         self.add_event_controller = None  # Initialize after UI is created
 
-    def setup_add_event_view(self):
-        """Setup the add event view in the main window"""
+    # UI SETUP METHODS (Called by main app's create methods)
+    def setup_add_event_ui(self):
+        """Setup the add event UI components - Called by main app"""
         self.mode = "add"
         self.edit_event_data = None
-        self._setup_event_view(AddEventUi)
+        self._setup_event_ui(AddEventUi)
 
-    def setup_edit_event_view(self, event_data=None):
-        """Setup the edit event view in the main window"""
+    def setup_edit_event_ui(self, event_data=None):
+        """Setup the edit event UI components - Called by main app"""
         self.mode = "edit"
         self.edit_event_data = event_data
-        self._setup_event_view(EditEventUi)
+        self._setup_event_ui(EditEventUi)
     
-    # NOTE the geometry helps with the window size
-    def _setup_event_view(self, ui_class):
-        """Common setup for both add and edit event views"""
+    def _setup_event_ui(self, ui_class):
+        """Common setup for both add and edit event UIs"""
         try:
-            # Store current geometry
-            geometry = self.main_app.geometry() if hasattr(self.main_app, 'geometry') and self.main_app.geometry().isValid() else None
-            
-            # Clear any existing central widget
-            self.main_app.setCentralWidget(None)
-            
-            # NOTE collection of garbage so that the changing of ui avoids lagging the application 
-            # Force garbage collection
-            import gc
-            gc.collect()
-            
             # Create and setup Event UI
             self.add_event_ui = ui_class()
             self.add_event_ui.setupUi(self.main_app, user_role=self.main_app.user_role)
@@ -68,21 +57,30 @@ class AddEventManager:
             if self.mode == "edit" and self.edit_event_data:
                 self.populate_form_with_data(self.edit_event_data)
             
-            # Restore geometry if we had one
-            if geometry:
-                self.main_app.setGeometry(geometry)
-            
             # Load upcoming events data with delay to ensure UI is ready
             QTimer.singleShot(100, self.populate_upcoming_events)
-            
-            self.main_app.current_view = f"{self.mode}_event"
-            title = "Campus Event Manager - Add Event" if self.mode == "add" else "Campus Event Manager - Edit Event"
-            self.main_app.setWindowTitle(title)
             
         except Exception as e:
             import traceback
             traceback.print_exc()
-            QMessageBox.critical(self.main_app, "Error", f"Could not setup {self.mode} event view: {str(e)}")
+            QMessageBox.critical(self.main_app, "Error", f"Could not setup {self.mode} event UI: {str(e)}")
+
+    def restore_event_form_state(self, saved_state):
+        """Restore event form state from router data"""
+        try:
+            if not saved_state or not self.add_event_ui:
+                return
+            
+            # Restore mode if available
+            if 'mode' in saved_state:
+                self.mode = saved_state['mode']
+            
+            # Note: We typically don't restore form data for security/privacy reasons
+            # But we could restore other UI state here if needed
+                
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
 
     def populate_form_with_data(self, event_data):
         """Populate form fields with existing event data for editing"""
@@ -491,6 +489,28 @@ class AddEventManager:
         if not event_data['target_audience']:
             return {'valid': False, 'message': 'Please select at least one target audience.'}
         
+        # Check time constraints
+        start_time = event_data.get('start_time')
+        end_time = event_data.get('end_time')
+        
+        if start_time and end_time:
+            # Define allowed time range (7:00 AM to 9:00 PM)
+            min_time = QTime(7, 0)   # 7:00 AM
+            max_time = QTime(21, 0)  # 9:00 PM
+            
+            # Check if start time is within allowed range
+            if start_time < min_time or start_time > max_time:
+                return {'valid': False, 'message': 'Start time must be between 7:00 AM and 9:00 PM.'}
+            
+            # Check if end time is within allowed range
+            if end_time < min_time or end_time > max_time:
+                return {'valid': False, 'message': 'End time must be between 7:00 AM and 9:00 PM.'}
+            
+            # Check if end time is after start time (for same day events)
+            if event_data['start_date'] == event_data['end_date']:
+                if end_time <= start_time:
+                    return {'valid': False, 'message': 'End time must be later than start time.'}
+        
         return {'valid': True, 'message': 'Validation passed.'}
 
     def clear_form(self):
@@ -587,11 +607,15 @@ class AddEventManager:
     def manage_events(self):
         """Handle manage events button - navigate to activities view"""
         try:
-            # Navigate to activities using main app method (try new MVC method first)
-            if hasattr(self.main_app, 'handle_show_activities_view'):
-                self.main_app.handle_show_activities_view()
-            elif hasattr(self.main_app, 'show_activities_view'):
-                self.main_app.show_activities_view()
+            # Navigate to activities using router
+            if hasattr(self.main_app, 'router'):
+                self.main_app.router.to_activities()
+            else:
+                # Fallback to legacy methods
+                if hasattr(self.main_app, 'handle_show_activities_view'):
+                    self.main_app.handle_show_activities_view()
+                elif hasattr(self.main_app, 'show_activities_view'):
+                    self.main_app.show_activities_view()
             
         except Exception as e:
             import traceback
@@ -600,7 +624,7 @@ class AddEventManager:
     def view_all_events(self):
         """Handle view all events button - navigate to calendar"""
         try:
-            # Navigate to calendar using main app method
+            # Navigate to calendar using router
             self.go_back_to_calendar()
             
         except Exception as e:
@@ -611,10 +635,15 @@ class AddEventManager:
         """Navigate back to the previous view (could be calendar or activities)"""
         try:
             # Check if we came from activities (edit mode typically comes from activities)
-            if self.mode == "edit" and hasattr(self.main_app, 'handle_show_activities_view'):
-                self.main_app.handle_show_activities_view()
-            elif self.mode == "edit" and hasattr(self.main_app, 'show_activities_view'):
-                self.main_app.show_activities_view()
+            if self.mode == "edit":
+                if hasattr(self.main_app, 'router'):
+                    self.main_app.router.to_activities()
+                else:
+                    # Fallback to legacy methods
+                    if hasattr(self.main_app, 'handle_show_activities_view'):
+                        self.main_app.handle_show_activities_view()
+                    elif hasattr(self.main_app, 'show_activities_view'):
+                        self.main_app.show_activities_view()
             else:
                 # Default to calendar view
                 self.go_back_to_calendar()
@@ -623,15 +652,18 @@ class AddEventManager:
             traceback.print_exc()
 
     def go_back_to_calendar(self):
-        """Navigate back to calendar view"""
+        """Navigate back to calendar view using router"""
         try:
-            # Use main app method to show calendar (try new MVC method first)
-            if hasattr(self.main_app, 'handle_show_calendar_view'):
-                self.main_app.handle_show_calendar_view()
-            elif hasattr(self.main_app, 'show_calendar_view'):
-                self.main_app.show_calendar_view()
-            elif hasattr(self.main_app, 'setup_calendar_view'):
-                self.main_app.setup_calendar_view()
+            if hasattr(self.main_app, 'router'):
+                self.main_app.router.to_calendar()
+            else:
+                # Fallback to legacy methods
+                if hasattr(self.main_app, 'handle_show_calendar_view'):
+                    self.main_app.handle_show_calendar_view()
+                elif hasattr(self.main_app, 'show_calendar_view'):
+                    self.main_app.show_calendar_view()
+                elif hasattr(self.main_app, 'setup_calendar_view'):
+                    self.main_app.setup_calendar_view()
         except Exception as e:
             import traceback
             traceback.print_exc()

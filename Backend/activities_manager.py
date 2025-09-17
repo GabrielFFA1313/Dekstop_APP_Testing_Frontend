@@ -1,4 +1,4 @@
-# ACTIVITIES_MANAGER.PY - Backend logic for activities view functionality (listing and deleting)
+# ACTIVITIES_MANAGER.PY - Backend logic for activities view functionality (listing and deleting) - Router Compatible
 from PyQt6.QtWidgets import QMessageBox, QWidget, QHBoxLayout, QPushButton
 from PyQt6.QtCore import QDate, QTimer, Qt
 from PyQt6 import QtWidgets, QtGui, QtCore
@@ -8,7 +8,7 @@ from Controller.activities_controller import ActivitiesController
 
 
 class ActivitiesManager:
-    """Manager class for handling activities view business logic (listing and deleting)"""
+    """Manager class for handling activities view business logic (listing and deleting) - Router Compatible"""
     
     def __init__(self, main_app, event_manager):
         self.main_app = main_app
@@ -16,22 +16,11 @@ class ActivitiesManager:
         self.activities_ui = None
         self.all_activities = []
         self.activities_controller = None  # Will be initialized when UI is created
-    
-    # NOTE the geometry helps with the window size
-    def setup_activities_view(self):
-        """Setup the activities view as the main content"""
+
+    # UI SETUP METHOD (Called by main app's create_activities_view)
+    def setup_activities_ui(self):
+        """Setup the activities UI components - Called by main app"""
         try:
-            # Store current window properties
-            geometry = self.main_app.geometry()
-            
-            # Clear the current central widget
-            self.main_app.setCentralWidget(None)
-            
-            # NOTE collection of garbage so that the changing of ui avoids lagging the application 
-            # Force garbage collection
-            import gc
-            gc.collect()
-            
             # Create activities UI and setup
             self.activities_ui = Ui_MainWindow()
             self.activities_ui.setupUi(self.main_app, user_role=self.main_app.user_role)
@@ -51,19 +40,37 @@ class ActivitiesManager:
             # Setup connections through controller
             self.activities_controller.setup_activities_connections()
             
-            # Restore window properties
-            self.main_app.setGeometry(geometry)
-            
             # Load data with delay to ensure UI is ready
             QTimer.singleShot(100, self.load_activities_data_delayed)
-            
-            # Update window title
-            self.main_app.setWindowTitle("Campus Event Manager - Activities")
             
         except Exception as e:
             import traceback
             traceback.print_exc()
-            QMessageBox.critical(self.main_app, "Error", f"Could not setup activities view: {str(e)}")
+            QMessageBox.critical(self.main_app, "Error", f"Could not setup activities UI: {str(e)}")
+
+    def restore_activities_state(self, saved_state):
+        """Restore activities view state from router data"""
+        try:
+            if not saved_state or not self.activities_ui:
+                return
+            
+            # Restore activity filter
+            if 'activity_filter' in saved_state and hasattr(self.activities_ui, 'comboActivityType'):
+                filter_text = saved_state['activity_filter']
+                index = self.activities_ui.comboActivityType.findText(filter_text)
+                if index >= 0:
+                    self.activities_ui.comboActivityType.setCurrentIndex(index)
+            
+            # Restore upcoming filter
+            if 'upcoming_filter' in saved_state and hasattr(self.activities_ui, 'comboUpcomingFilter'):
+                filter_text = saved_state['upcoming_filter']
+                index = self.activities_ui.comboUpcomingFilter.findText(filter_text)
+                if index >= 0:
+                    self.activities_ui.comboUpcomingFilter.setCurrentIndex(index)
+                    
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
 
     def update_table_headers(self):
         """Update table headers based on user role"""
@@ -203,7 +210,7 @@ class ActivitiesManager:
     def can_add_activities(self):
         """Check if current user can add new activities"""
         user_role = getattr(self.main_app, 'user_role', '').lower()
-        return user_role in ['admin', 'administrator', 'super_admin', 'org', 'faculty']
+        return user_role in ['admin', 'administrator', 'super_admin', 'org','organization', 'faculty']
 
     def populate_activities_table(self, activities_list):
         """Populate the activities table with event data"""
@@ -252,9 +259,9 @@ class ActivitiesManager:
                 
                 # Actions - Create Edit/Delete buttons only for authorized users
                 if show_actions and hasattr(self.activities_ui, 'create_action_buttons'):
-                    # Use controller callbacks for button actions
-                    edit_callback = self.activities_controller.create_edit_callback(row)
-                    delete_callback = self.activities_controller.create_delete_callback(row)
+                    # Create direct callbacks to avoid controller dependency issues
+                    edit_callback = lambda r=row: self.edit_activity(r)
+                    delete_callback = lambda r=row: self.delete_activity(r)
                     
                     action_buttons = self.activities_ui.create_action_buttons(
                         row, 
@@ -384,14 +391,14 @@ class ActivitiesManager:
                 'time': activity_data['time']
             }
             
-            # Route to AddEventManager (which handles both add and edit)
-            if hasattr(self.main_app, 'add_event_manager'):
-                self.main_app.add_event_manager.setup_edit_event_view(edit_data)
+            # Route to edit event view using router
+            if hasattr(self.main_app, 'router'):
+                self.main_app.router.to_edit_event(edit_data)
             else:
                 QMessageBox.warning(
                     self.main_app,
                     "Error",
-                    "AddEventManager not available. Please check main app setup."
+                    "Navigation router not available. Please check main app setup."
                 )
                 
         except Exception as e:
@@ -410,17 +417,15 @@ class ActivitiesManager:
                 )
                 return
                 
-            # Use the main app's add event manager to show add event view
-            if hasattr(self.main_app, 'add_event_manager'):
-                self.main_app.add_event_manager.setup_add_event_view()
-            elif hasattr(self.main_app, 'show_add_event_view'):
-                self.main_app.show_add_event_view()
+            # Use router to navigate to add event view
+            if hasattr(self.main_app, 'router'):
+                self.main_app.router.to_add_event()
             else:
-                # Fallback message if the method doesn't exist
+                # Fallback message if router doesn't exist
                 QMessageBox.information(
                     self.main_app, 
                     "Add Event", 
-                    "Add Event functionality requires the Add Event Manager to be connected to the main application.\n\nPlease ensure the main application has been updated with the Add Event Manager."
+                    "Add Event functionality requires the router to be connected to the main application.\n\nPlease ensure the main application has been updated with the router."
                 )
                 
         except Exception as e:
@@ -545,15 +550,18 @@ class ActivitiesManager:
             traceback.print_exc()
 
     def go_back_to_calendar(self):
-        """Return to calendar from activities - Business logic"""
+        """Return to calendar from activities - Business logic using router"""
         try:
-            # Try new MVC method names first, then fall back to old ones
-            if hasattr(self.main_app, 'handle_show_calendar_view'):
-                self.main_app.handle_show_calendar_view()
-            elif hasattr(self.main_app, 'show_calendar_view'):
-                self.main_app.show_calendar_view()
-            elif hasattr(self.main_app, 'setup_calendar_view'):
-                self.main_app.setup_calendar_view()
+            if hasattr(self.main_app, 'router'):
+                self.main_app.router.to_calendar()
+            else:
+                # Fallback to legacy methods
+                if hasattr(self.main_app, 'handle_show_calendar_view'):
+                    self.main_app.handle_show_calendar_view()
+                elif hasattr(self.main_app, 'show_calendar_view'):
+                    self.main_app.show_calendar_view()
+                elif hasattr(self.main_app, 'setup_calendar_view'):
+                    self.main_app.setup_calendar_view()
         except Exception as e:
             import traceback
             traceback.print_exc()

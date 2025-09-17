@@ -1,4 +1,4 @@
-# MAIN.PY - Backend Main Application Logic
+# MAIN.PY - Backend Main Application Logic with Router Navigation - CORRECTED
 import sys
 import os
 from PyQt6.QtWidgets import QApplication, QMainWindow, QMessageBox
@@ -22,9 +22,12 @@ from Backend.add_event_manager import AddEventManager
 # Import controller
 from Controller.calendar_control import CalendarController
 
+# Import navigation router
+from Paging.navigation_router import NavigationRouter
+
 
 class MainApplication(QMainWindow):
-    """Main application backend logic focused on data management and business logic"""
+    """Main application backend logic focused on data management and business logic with router navigation"""
     
     def __init__(self, user_role="admin"):
         super().__init__()
@@ -39,6 +42,9 @@ class MainApplication(QMainWindow):
         
         self.event_manager = EventManager(main_app=self, json_file_path=json_file_path)
         
+        # Initialize navigation router FIRST
+        self.router = NavigationRouter(self)
+        
         # Initialize view managers
         self.activities_manager = ActivitiesManager(self, self.event_manager)
         self.day_view_manager = DayViewManager(self, self.event_manager)
@@ -51,18 +57,20 @@ class MainApplication(QMainWindow):
         self.calendar_ui = None
         self.search_ui = None
         
-        # Setup Calendar UI (default view)
-        self.setup_calendar_view()
+        # Start with the route from JSON (or default to calendar)
+        self.router.navigate_to(self.router.current_route['view'], 
+                               self.router.current_route['params'])
 
-    # VIEW SETUP METHODS (Backend Logic)
-    def setup_calendar_view(self):
-        """Setup the calendar view as the main content - Backend logic"""
+    # VIEW CREATION METHODS (Updated to match new manager method names)
+    def create_calendar_view(self, params=None, saved_state=None):
+        """Create calendar view UI components"""
         try:
-            # Store current geometry
-            geometry = self.geometry() if hasattr(self, 'geometry') and self.geometry().isValid() else None
-            
             # Clear any existing central widget
             self.setCentralWidget(None)
+            
+            # Force garbage collection
+            import gc
+            gc.collect()
             
             # Create and setup Calendar UI
             self.calendar_ui = CalendarUi()
@@ -71,9 +79,17 @@ class MainApplication(QMainWindow):
             # Setup connections through controller
             self.calendar_controller.setup_calendar_connections()
             
-            # Restore geometry if we had one
-            if geometry:
-                self.setGeometry(geometry)
+            # Restore saved state if available
+            if saved_state:
+                if saved_state.get('selected_date'):
+                    if hasattr(self.calendar_ui, 'calendarWidget'):
+                        self.calendar_ui.calendarWidget.setSelectedDate(saved_state['selected_date'])
+                
+                if saved_state.get('filter_selection'):
+                    if hasattr(self.calendar_ui, 'comboUpcomingFilter'):
+                        index = self.calendar_ui.comboUpcomingFilter.findText(saved_state['filter_selection'])
+                        if index >= 0:
+                            self.calendar_ui.comboUpcomingFilter.setCurrentIndex(index)
             
             # Populate upcoming events after UI is ready
             QTimer.singleShot(100, self.populate_upcoming_events)
@@ -86,14 +102,17 @@ class MainApplication(QMainWindow):
             import traceback
             traceback.print_exc()
 
-    def setup_search_view(self, search_query=""):
-        """Setup search view - Backend logic"""
+    def create_search_view(self, params=None, saved_state=None):
+        """Create search view UI components"""
         try:
-            # Store current geometry
-            geometry = self.geometry()
+            search_query = params.get('query', '') if params else ''
             
             # Clear any existing central widget
             self.setCentralWidget(None)
+            
+            # Force garbage collection
+            import gc
+            gc.collect()
             
             # Create and setup Search UI
             self.search_ui = SearchUi()
@@ -109,10 +128,6 @@ class MainApplication(QMainWindow):
             if search_query:
                 self.execute_search(search_query)
             
-            # Restore geometry
-            if geometry:
-                self.setGeometry(geometry)
-            
             self.current_view = "search"
             self.calendar_ui = None  # Clear calendar reference
             self.setWindowTitle("Campus Event Manager - Search Results")
@@ -122,13 +137,120 @@ class MainApplication(QMainWindow):
             traceback.print_exc()
             QMessageBox.critical(self, "Error", f"Could not switch to search view: {str(e)}")
 
-    # CONTROLLER INTERFACE METHODS (Called by Controller)
+    def create_day_view(self, params=None, saved_state=None):
+        """Create day view UI components"""
+        try:
+            selected_date = params.get('date') if params else saved_state.get('current_date') if saved_state else None
+            
+            # Clear any existing central widget
+            self.setCentralWidget(None)
+            
+            # Force garbage collection
+            import gc
+            gc.collect()
+            
+            # Setup day view UI - CORRECTED METHOD NAME
+            self.day_view_manager.setup_day_view_ui(selected_date)
+            
+            # Restore saved state if available
+            if saved_state:
+                self.day_view_manager.restore_day_view_state(saved_state)
+            
+            self.current_view = "day_view"  # CORRECTED: "day" -> "day_view" to match router
+            self.calendar_ui = None  # Clear calendar reference
+            self.setWindowTitle("Campus Event Manager - Day View")
+            
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(self, "Error", f"Could not switch to day view: {str(e)}")
+
+    def create_activities_view(self, params=None, saved_state=None):
+        """Create activities view UI components"""
+        try:
+            # Clear any existing central widget
+            self.setCentralWidget(None)
+            
+            # Force garbage collection
+            import gc
+            gc.collect()
+            
+            # Setup activities UI - CORRECTED METHOD NAME
+            self.activities_manager.setup_activities_ui()
+            
+            # Restore saved state if available
+            if saved_state:
+                self.activities_manager.restore_activities_state(saved_state)
+            
+            self.current_view = "activities"
+            self.calendar_ui = None  # Clear calendar reference
+            self.setWindowTitle("Campus Event Manager - Activities")
+            
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(self, "Error", f"Could not switch to activities view: {str(e)}")
+
+    def create_add_event_view(self, params=None, saved_state=None):
+        """Create add event view UI components"""
+        try:
+            # Clear any existing central widget
+            self.setCentralWidget(None)
+            
+            # Force garbage collection
+            import gc
+            gc.collect()
+            
+            # Setup add event UI - CORRECTED METHOD NAME
+            self.add_event_manager.setup_add_event_ui()
+            
+            # Restore saved state if available
+            if saved_state:
+                self.add_event_manager.restore_event_form_state(saved_state)
+            
+            self.current_view = "add_event"
+            self.calendar_ui = None  # Clear calendar reference
+            self.setWindowTitle("Campus Event Manager - Add Event")
+            
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(self, "Error", f"Could not switch to add event view: {str(e)}")
+
+    def create_edit_event_view(self, params=None, saved_state=None):
+        """Create edit event view UI components"""
+        try:
+            event_data = params.get('event_data') if params else None
+            
+            # Clear any existing central widget
+            self.setCentralWidget(None)
+            
+            # Force garbage collection
+            import gc
+            gc.collect()
+            
+            # Setup edit event UI - CORRECTED METHOD NAME
+            self.add_event_manager.setup_edit_event_ui(event_data)
+            
+            # Restore saved state if available
+            if saved_state:
+                self.add_event_manager.restore_event_form_state(saved_state)
+            
+            self.current_view = "edit_event"
+            self.calendar_ui = None  # Clear calendar reference
+            self.setWindowTitle("Campus Event Manager - Edit Event")
+            
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(self, "Error", f"Could not switch to edit event view: {str(e)}")
+
+    # CONTROLLER INTERFACE METHODS (Updated to use router)
     def handle_calendar_date_clicked(self, clicked_date):
         """Handle calendar date click logic"""
-        # Update current date to the clicked date
+        # Update current date and navigate to day view
         self.current_date = clicked_date
-        # Switch to day view with the clicked date
-        self.show_day_view()
+        self.router.to_day_view(clicked_date)
 
     def update_current_date(self, selected_date):
         """Update the current date"""
@@ -136,22 +258,22 @@ class MainApplication(QMainWindow):
 
     def handle_search_request(self, search_query):
         """Handle search request logic"""
-        self.setup_search_view(search_query)
+        self.router.to_search(search_query)
 
     def handle_view_change(self, view_type):
         """Handle view switching logic"""
         if view_type == "Day" and self.current_view == "calendar":
-            self.show_day_view()
-        elif view_type == "Month" and self.current_view == "day":
-            self.setup_calendar_view()
+            self.router.to_day_view(self.current_date)
+        elif view_type == "Month" and self.current_view == "day_view":  # CORRECTED: "day" -> "day_view"
+            self.router.to_calendar()
 
     def handle_show_activities_view(self):
         """Handle showing activities view logic"""
-        self.show_activities_view()
+        self.router.to_activities()
 
     def handle_show_calendar_view(self):
         """Handle showing calendar view logic"""
-        self.setup_calendar_view()
+        self.router.to_calendar()
 
     def handle_filter_upcoming_events(self, filter_text):
         """Handle filtering upcoming events logic"""
@@ -165,35 +287,28 @@ class MainApplication(QMainWindow):
         """Handle filtering upcoming events in search view logic"""
         self.filter_upcoming_events_search(filter_text)
 
-    # BUSINESS LOGIC METHODS
+    # LEGACY METHODS (Keep these for backward compatibility)
     def show_day_view(self):
-        """Switch to day view using day view manager"""
-        try:
-            self.day_view_manager.setup_day_view(self.current_date)
-            self.current_view = "day"
-            self.calendar_ui = None  # Clearing calendar reference
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"Could not switch to day view: {str(e)}")
+        """Legacy method - use router instead"""
+        self.router.to_day_view(self.current_date)
 
     def show_activities_view(self):
-        """Switch to activities view using activities manager"""
-        try:
-            self.activities_manager.setup_activities_view()
-            self.current_view = "activities"
-            self.calendar_ui = None  # Clearing calendar reference
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"Could not switch to activities view: {str(e)}")
+        """Legacy method - use router instead"""
+        self.router.to_activities()
 
     def show_add_event_view(self):
-        """Switch to add event view using add event manager"""
-        try:
-            self.add_event_manager.setup_add_event_view()
-            self.current_view = "add_event"
-            self.calendar_ui = None  # Clearing calendar reference
-            self.setWindowTitle("Campus Event Manager - Add Event")
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"Could not switch to add event view: {str(e)}")
+        """Legacy method - use router instead"""
+        self.router.to_add_event()
 
+    def setup_calendar_view(self):
+        """Legacy method - use router instead"""
+        self.router.to_calendar()
+
+    def setup_search_view(self, search_query=""):
+        """Legacy method - use router instead"""
+        self.router.to_search(search_query)
+
+    # BUSINESS LOGIC METHODS (Keep these unchanged)
     def filter_upcoming_events(self, filter_text):
         """Filter upcoming events based on selected category in calendar view"""
         try:
@@ -358,7 +473,7 @@ class MainApplication(QMainWindow):
             import traceback
             traceback.print_exc()
 
-    # SEARCH LOGIC METHODS
+    # SEARCH LOGIC METHODS (Keep these unchanged)
     def execute_search(self, search_query):
         """Execute search through event manager and display results"""
         try:
@@ -408,7 +523,9 @@ class MainApplication(QMainWindow):
         all_events = self.event_manager.get_events()
         
         for date, events in all_events.items():
-            for title, category in events:
+            for event_tuple in events:
+                title = event_tuple[0]  # Handle both old and new tuple formats
+                category = event_tuple[1]
                 # Search in title (case-insensitive)
                 if search_query in title.lower():
                     results.append((date, title, category))
@@ -465,7 +582,7 @@ class MainApplication(QMainWindow):
         """Update upcoming events - called by EventManager when events change"""
         if self.current_view == "calendar":
             self.populate_upcoming_events()
-        elif self.current_view == "day":
+        elif self.current_view == "day_view":  # CORRECTED: "day" -> "day_view"
             self.day_view_manager.refresh_day_view()
         elif self.current_view == "activities":
             self.activities_manager.refresh_activities()
@@ -487,7 +604,7 @@ def main():
     
     # Create and show main window with Calendar UI
     # NOTE roles (Admin)(Organization)(Faculty)(Student)
-    main_window = MainApplication(user_role="Admin")
+    main_window = MainApplication(user_role="Organization")
     main_window.setWindowTitle("Campus Event Manager")
     main_window.show()
     

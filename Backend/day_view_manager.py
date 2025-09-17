@@ -1,4 +1,4 @@
-# DAY_VIEW_MANAGER.PY - Backend logic for day view functionality
+# DAY_VIEW_MANAGER.PY - Backend logic for day view functionality - Router Compatible
 from PyQt6.QtWidgets import QMessageBox
 from PyQt6.QtCore import QDate, QTimer, Qt
 from PyQt6 import QtWidgets, QtGui, QtCore
@@ -9,7 +9,7 @@ from Controller.day_view_controller import DayViewController
 
 
 class DayViewManager:
-    """Manager class for handling day view business logic and data operations"""
+    """Manager class for handling day view business logic and data operations - Router Compatible"""
     
     def __init__(self, main_app, event_manager):
         self.main_app = main_app
@@ -18,25 +18,15 @@ class DayViewManager:
         # Initialize controller
         self.day_view_controller = DayViewController(self)
 
-    # VIEW SETUP METHODS (Backend Logic)
-    def setup_day_view(self, selected_date=None):
-        """Setup the day view as the main content - Backend logic"""
+    # UI SETUP METHOD (Called by main app's create_day_view)
+    def setup_day_view_ui(self, selected_date=None):
+        """Setup the day view UI components - Called by main app"""
         try:
-            # Store current geometry
-            geometry = self.main_app.geometry() if hasattr(self.main_app, 'geometry') and self.main_app.geometry().isValid() else None
-            
             # Set current date
             if selected_date:
                 self.main_app.current_date = selected_date
             else:
                 self.main_app.current_date = QDate.currentDate()
-            
-            # Clear any existing central widget
-            self.main_app.setCentralWidget(None)
-            
-            # Force garbage collection to avoid lag
-            import gc
-            gc.collect()
             
             # Create and setup Day View UI
             self.day_view_ui = DayViewUi()
@@ -45,19 +35,36 @@ class DayViewManager:
             # Setup connections through controller
             self.day_view_controller.setup_day_view_connections()
             
-            # Restore geometry if we had one
-            if geometry:
-                self.main_app.setGeometry(geometry)
-            
             # Load day view data with delay to ensure UI is ready
             QTimer.singleShot(100, self.load_day_view_events)
-            
-            self.main_app.setWindowTitle("Campus Event Manager - Day View")
             
         except Exception as e:
             import traceback
             traceback.print_exc()
-            QMessageBox.critical(self.main_app, "Error", f"Could not setup day view: {str(e)}")
+            QMessageBox.critical(self.main_app, "Error", f"Could not setup day view UI: {str(e)}")
+
+    def restore_day_view_state(self, saved_state):
+        """Restore day view state from router data"""
+        try:
+            if not saved_state or not self.day_view_ui:
+                return
+            
+            # Restore current date
+            if 'current_date' in saved_state:
+                self.main_app.current_date = saved_state['current_date']
+                self.update_day_view_date()
+                self.load_day_view_events()
+            
+            # Restore filter selection
+            if 'filter_selection' in saved_state and hasattr(self.day_view_ui, 'comboUpcomingFilter'):
+                filter_text = saved_state['filter_selection']
+                index = self.day_view_ui.comboUpcomingFilter.findText(filter_text)
+                if index >= 0:
+                    self.day_view_ui.comboUpcomingFilter.setCurrentIndex(index)
+                    
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
 
     # CONTROLLER INTERFACE METHODS (Called by Controller)
     def handle_previous_day(self):
@@ -79,31 +86,43 @@ class DayViewManager:
         self.load_day_view_events()
 
     def handle_view_change(self, view_type):
-        """Handle view switching logic"""
+        """Handle view switching logic using router"""
         if view_type == "Month":
-            # Switch back to calendar view through main app
-            if hasattr(self.main_app, 'handle_show_calendar_view'):
-                self.main_app.handle_show_calendar_view()
-            elif hasattr(self.main_app, 'setup_calendar_view'):
-                self.main_app.setup_calendar_view()
+            # Switch back to calendar view using router
+            if hasattr(self.main_app, 'router'):
+                self.main_app.router.to_calendar(self.main_app.current_date)
             else:
-                QMessageBox.information(self.main_app, "Navigation", "Returning to Calendar View")
+                # Fallback to legacy methods
+                if hasattr(self.main_app, 'handle_show_calendar_view'):
+                    self.main_app.handle_show_calendar_view()
+                elif hasattr(self.main_app, 'setup_calendar_view'):
+                    self.main_app.setup_calendar_view()
+                else:
+                    QMessageBox.information(self.main_app, "Navigation", "Returning to Calendar View")
 
     def handle_filter_upcoming_events(self, filter_text):
         """Handle filtering upcoming events logic"""
         self.filter_day_view_upcoming_events(filter_text)
 
     def handle_search_request(self, search_query):
-        """Handle search request logic through main app"""
-        if hasattr(self.main_app, 'handle_search_request'):
-            self.main_app.handle_search_request(search_query)
-        elif hasattr(self.main_app, 'setup_search_view'):
-            self.main_app.setup_search_view(search_query)
+        """Handle search request logic using router"""
+        if hasattr(self.main_app, 'router'):
+            self.main_app.router.to_search(search_query)
+        else:
+            # Fallback to legacy methods
+            if hasattr(self.main_app, 'handle_search_request'):
+                self.main_app.handle_search_request(search_query)
+            elif hasattr(self.main_app, 'setup_search_view'):
+                self.main_app.setup_search_view(search_query)
 
     def handle_add_event_request(self):
-        """Handle add event request logic"""
-        if hasattr(self.main_app, 'show_add_event_view'):
-            self.main_app.show_add_event_view()
+        """Handle add event request logic using router"""
+        if hasattr(self.main_app, 'router'):
+            self.main_app.router.to_add_event()
+        else:
+            # Fallback to legacy methods
+            if hasattr(self.main_app, 'show_add_event_view'):
+                self.main_app.show_add_event_view()
 
     def handle_time_slot_click(self, hour):
         """Handle time slot click logic for adding events"""
