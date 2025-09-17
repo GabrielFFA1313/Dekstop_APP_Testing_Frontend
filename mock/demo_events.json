@@ -450,6 +450,30 @@
         "category": "Academic",
         "start_time": "00:00",
         "end_time": "17:00"
+      },
+      {
+        "title": "fuck123123",
+        "category": "Academic",
+        "start_time": "07:00",
+        "end_time": "18:00"
+      },
+      {
+        "title": "fuckj21397812093",
+        "category": "Academic",
+        "start_time": "15:00",
+        "end_time": "16:00"
+      },
+      {
+        "title": "fuck9898",
+        "category": "Academic",
+        "start_time": "15:00",
+        "end_time": "17:00"
+      },
+      {
+        "title": "1232",
+        "category": "Academic",
+        "start_time": "09:00",
+        "end_time": "17:00"
       }
     ],
     "2025-09-16": [
@@ -464,6 +488,12 @@
         "category": "Holiday",
         "start_time": "10:00",
         "end_time": "11:00"
+      },
+      {
+        "title": "fuck",
+        "category": "Academic",
+        "start_time": "09:00",
+        "end_time": "17:00"
       }
     ],
     "2025-10-08": [
@@ -496,7 +526,7 @@
     ]
   },
   "metadata": {
-    "last_updated": "2025-09-17T14:18:10.226358",
-    "total_events": 63
+    "last_updated": "2025-09-17T18:27:03.997723",
+    "total_events": 68
   }
 }

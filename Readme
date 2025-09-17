@@ -7,8 +7,12 @@ UI - All the layout files of the application some have thier own controller some
 
 
 TODO
-- Database paging
-- Edit (Almost?)
-- Add (Almost?)
-- Delete (Almost?)
+- Database paging (done?)
+- Edit (Done)
+- Add (Done)
+- Delete (Done)
 - Json File (Done)
+
+KNOWN BUGS
+
+- if faculty is in add date before exiting the app and a student logs it will go to the add date

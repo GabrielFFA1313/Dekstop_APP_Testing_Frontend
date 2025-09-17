@@ -481,6 +481,10 @@ class AddEventManager:
         if event_data['type'] == "Select Event Type":
             return {'valid': False, 'message': 'Please select an event type.'}
         
+         # Check if start_date is before today
+        if event_data['start_date'] < QDate.currentDate():
+            return {'valid': False, 'message': 'Start date cannot be before today.'}
+        
         # Check date logic
         if event_data['end_date'] < event_data['start_date']:
             return {'valid': False, 'message': 'End date cannot be before start date.'}
