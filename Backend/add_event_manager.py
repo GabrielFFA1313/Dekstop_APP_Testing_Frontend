@@ -1,4 +1,4 @@
-# ADD_EVENT_MANAGER.PY - Handles add and edit event functionality with CRUD operations
+# ADD_EVENT_MANAGER.PY - Backend logic for add/edit event functionality with CRUD operations
 from PyQt6.QtWidgets import QMessageBox, QDialog
 from PyQt6.QtCore import QDate, QTime, Qt, QTimer
 from PyQt6 import QtWidgets, QtGui, QtCore
@@ -6,10 +6,11 @@ from datetime import datetime, time
 
 from UI.add_event import Ui_MainWindow as AddEventUi
 from UI.edit_event import Ui_MainWindow as EditEventUi
+from Controller.add_event_controller import AddEventController
 
 
 class AddEventManager:
-    """Manager class for handling both add and edit event functionality with CRUD operations"""
+    """Manager class for handling both add and edit event business logic with CRUD operations"""
     
     def __init__(self, main_app, event_manager):
         self.main_app = main_app
@@ -17,6 +18,7 @@ class AddEventManager:
         self.add_event_ui = None
         self.mode = "add"
         self.edit_event_data = None
+        self.add_event_controller = None  # Initialize after UI is created
 
     def setup_add_event_view(self):
         """Setup the add event view in the main window"""
@@ -49,14 +51,18 @@ class AddEventManager:
             self.add_event_ui = ui_class()
             self.add_event_ui.setupUi(self.main_app, user_role=self.main_app.user_role)
             
+            # Initialize controller after UI is created
+            from Controller.add_event_controller import AddEventController
+            self.add_event_controller = AddEventController(self)
+            
             # Set event manager reference in the UI
             if hasattr(self.add_event_ui, 'set_event_manager'):
                 self.add_event_ui.set_event_manager(self.event_manager)
             else:
                 self.add_event_ui.event_manager = self.event_manager
             
-            # Setup connections
-            self.setup_add_event_connections()
+            # Setup connections through controller
+            self.add_event_controller.setup_add_event_connections()
             
             # Populate form with existing data if in edit mode
             if self.mode == "edit" and self.edit_event_data:
@@ -152,70 +158,6 @@ class AddEventManager:
                     self.add_event_ui.checkFaculty.setChecked('Faculty' in audience)
                     self.add_event_ui.checkOrgOfficer.setChecked('Organization Officer' in audience)
                     self.add_event_ui.checkAll.setChecked('All' in audience)
-            
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-
-    def setup_add_event_connections(self):
-        """Setup add event specific connections"""
-        try:
-            # Connect save/update button (check for both save and update buttons)
-            save_btn = getattr(self.add_event_ui, 'btnSave', None) or getattr(self.add_event_ui, 'btnUpdate', None)
-            if save_btn:
-                try:
-                    save_btn.clicked.disconnect()
-                except:
-                    pass
-                save_btn.clicked.connect(self.save_event)
-            
-            # Connect cancel button
-            if hasattr(self.add_event_ui, 'btnCancel'):
-                try:
-                    self.add_event_ui.btnCancel.clicked.disconnect()
-                except:
-                    pass
-                self.add_event_ui.btnCancel.clicked.connect(self.cancel_event)
-            
-            # Connect back button - modified to navigate back to previous view
-            if hasattr(self.add_event_ui, 'btnBack'):
-                try:
-                    self.add_event_ui.btnBack.clicked.disconnect()
-                except:
-                    pass
-                self.add_event_ui.btnBack.clicked.connect(self.go_back_to_previous_view)
-            
-            # Connect manage events button
-            if hasattr(self.add_event_ui, 'btnManageEvents'):
-                try:
-                    self.add_event_ui.btnManageEvents.clicked.disconnect()
-                except:
-                    pass
-                self.add_event_ui.btnManageEvents.clicked.connect(self.manage_events)
-            
-            # Connect view all button
-            if hasattr(self.add_event_ui, 'btnViewAll'):
-                try:
-                    self.add_event_ui.btnViewAll.clicked.disconnect()
-                except:
-                    pass
-                self.add_event_ui.btnViewAll.clicked.connect(self.view_all_events)
-            
-            # Connect checkboxes for target audience
-            if hasattr(self.add_event_ui, 'checkAll'):
-                try:
-                    self.add_event_ui.checkAll.stateChanged.disconnect()
-                except:
-                    pass
-                self.add_event_ui.checkAll.stateChanged.connect(self.toggle_all_users)
-            
-            # Connect upcoming events filter (if it exists from BaseUi)
-            if hasattr(self.add_event_ui, 'comboUpcomingFilter'):
-                try:
-                    self.add_event_ui.comboUpcomingFilter.currentTextChanged.disconnect()
-                except:
-                    pass
-                self.add_event_ui.comboUpcomingFilter.currentTextChanged.connect(self.filter_upcoming_events)
             
         except Exception as e:
             import traceback
@@ -641,8 +583,10 @@ class AddEventManager:
     def manage_events(self):
         """Handle manage events button - navigate to activities view"""
         try:
-            # Navigate to activities using main app method
-            if hasattr(self.main_app, 'show_activities_view'):
+            # Navigate to activities using main app method (try new MVC method first)
+            if hasattr(self.main_app, 'handle_show_activities_view'):
+                self.main_app.handle_show_activities_view()
+            elif hasattr(self.main_app, 'show_activities_view'):
                 self.main_app.show_activities_view()
             
         except Exception as e:
@@ -663,7 +607,9 @@ class AddEventManager:
         """Navigate back to the previous view (could be calendar or activities)"""
         try:
             # Check if we came from activities (edit mode typically comes from activities)
-            if self.mode == "edit" and hasattr(self.main_app, 'show_activities_view'):
+            if self.mode == "edit" and hasattr(self.main_app, 'handle_show_activities_view'):
+                self.main_app.handle_show_activities_view()
+            elif self.mode == "edit" and hasattr(self.main_app, 'show_activities_view'):
                 self.main_app.show_activities_view()
             else:
                 # Default to calendar view
@@ -675,9 +621,13 @@ class AddEventManager:
     def go_back_to_calendar(self):
         """Navigate back to calendar view"""
         try:
-            # Use main app method to show calendar
-            if hasattr(self.main_app, 'show_calendar_view'):
+            # Use main app method to show calendar (try new MVC method first)
+            if hasattr(self.main_app, 'handle_show_calendar_view'):
+                self.main_app.handle_show_calendar_view()
+            elif hasattr(self.main_app, 'show_calendar_view'):
                 self.main_app.show_calendar_view()
+            elif hasattr(self.main_app, 'setup_calendar_view'):
+                self.main_app.setup_calendar_view()
         except Exception as e:
             import traceback
             traceback.print_exc()

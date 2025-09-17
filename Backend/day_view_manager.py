@@ -1,22 +1,26 @@
-# DAY_VIEW_MANAGER.PY - Handles all day view functionality
+# DAY_VIEW_MANAGER.PY - Backend logic for day view functionality
 from PyQt6.QtWidgets import QMessageBox
 from PyQt6.QtCore import QDate, QTimer, Qt
 from PyQt6 import QtWidgets, QtGui, QtCore
 from datetime import datetime
 
 from UI.day_view import DayViewUi
+from Controller.day_view_controller import DayViewController
 
 
 class DayViewManager:
-    """Manager class for handling day view functionality"""
+    """Manager class for handling day view business logic and data operations"""
     
     def __init__(self, main_app, event_manager):
         self.main_app = main_app
         self.event_manager = event_manager
         self.day_view_ui = None
-    # NOTE the geometry helps with the window size
+        # Initialize controller
+        self.day_view_controller = DayViewController(self)
+
+    # VIEW SETUP METHODS (Backend Logic)
     def setup_day_view(self, selected_date=None):
-        """Setup the day view as the main content"""
+        """Setup the day view as the main content - Backend logic"""
         try:
             # Store current geometry
             geometry = self.main_app.geometry() if hasattr(self.main_app, 'geometry') and self.main_app.geometry().isValid() else None
@@ -30,8 +34,7 @@ class DayViewManager:
             # Clear any existing central widget
             self.main_app.setCentralWidget(None)
             
-            # NOTE collection of garbage so that the changing of ui avoids lagging the application 
-            # Force garbage collection
+            # Force garbage collection to avoid lag
             import gc
             gc.collect()
             
@@ -39,8 +42,8 @@ class DayViewManager:
             self.day_view_ui = DayViewUi()
             self.day_view_ui.setupDayViewUi(self.main_app, self.main_app.user_role)
             
-            # Setup connections
-            self.setup_day_view_connections()
+            # Setup connections through controller
+            self.day_view_controller.setup_day_view_connections()
             
             # Restore geometry if we had one
             if geometry:
@@ -56,51 +59,70 @@ class DayViewManager:
             traceback.print_exc()
             QMessageBox.critical(self.main_app, "Error", f"Could not setup day view: {str(e)}")
 
-    def setup_day_view_connections(self):
-        """Setup day view specific connections"""
-        try:
-            # Connect view dropdown to switch back to calendar
-            if hasattr(self.day_view_ui, 'comboView'):
-                try:
-                    self.day_view_ui.comboView.currentTextChanged.disconnect()
-                except:
-                    pass
-                self.day_view_ui.comboView.currentTextChanged.connect(self.handle_view_change)
-                
-            # Connect day view navigation buttons
-            if hasattr(self.day_view_ui, 'btnPrevDay'):
-                try:
-                    self.day_view_ui.btnPrevDay.clicked.disconnect()
-                except:
-                    pass
-                self.day_view_ui.btnPrevDay.clicked.connect(self.previous_day)
-            
-            if hasattr(self.day_view_ui, 'btnNextDay'):
-                try:
-                    self.day_view_ui.btnNextDay.clicked.disconnect()
-                except:
-                    pass
-                self.day_view_ui.btnNextDay.clicked.connect(self.next_day)
-            
-            if hasattr(self.day_view_ui, 'btnToday'):
-                try:
-                    self.day_view_ui.btnToday.clicked.disconnect()
-                except:
-                    pass
-                self.day_view_ui.btnToday.clicked.connect(self.go_to_today)
-            
-            # Connect filter dropdown if it exists in day view
-            if hasattr(self.day_view_ui, 'comboUpcomingFilter'):
-                try:
-                    self.day_view_ui.comboUpcomingFilter.currentTextChanged.disconnect()
-                except:
-                    pass
-                self.day_view_ui.comboUpcomingFilter.currentTextChanged.connect(self.filter_day_view_upcoming_events)
-            
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
+    # CONTROLLER INTERFACE METHODS (Called by Controller)
+    def handle_previous_day(self):
+        """Handle previous day navigation logic"""
+        self.main_app.current_date = self.main_app.current_date.addDays(-1)
+        self.update_day_view_date()
+        self.load_day_view_events()
 
+    def handle_next_day(self):
+        """Handle next day navigation logic"""
+        self.main_app.current_date = self.main_app.current_date.addDays(1)
+        self.update_day_view_date()
+        self.load_day_view_events()
+
+    def handle_go_to_today(self):
+        """Handle go to today navigation logic"""
+        self.main_app.current_date = QDate.currentDate()
+        self.update_day_view_date()
+        self.load_day_view_events()
+
+    def handle_view_change(self, view_type):
+        """Handle view switching logic"""
+        if view_type == "Month":
+            # Switch back to calendar view through main app
+            if hasattr(self.main_app, 'handle_show_calendar_view'):
+                self.main_app.handle_show_calendar_view()
+            elif hasattr(self.main_app, 'setup_calendar_view'):
+                self.main_app.setup_calendar_view()
+            else:
+                QMessageBox.information(self.main_app, "Navigation", "Returning to Calendar View")
+
+    def handle_filter_upcoming_events(self, filter_text):
+        """Handle filtering upcoming events logic"""
+        self.filter_day_view_upcoming_events(filter_text)
+
+    def handle_search_request(self, search_query):
+        """Handle search request logic through main app"""
+        if hasattr(self.main_app, 'handle_search_request'):
+            self.main_app.handle_search_request(search_query)
+        elif hasattr(self.main_app, 'setup_search_view'):
+            self.main_app.setup_search_view(search_query)
+
+    def handle_add_event_request(self):
+        """Handle add event request logic"""
+        if hasattr(self.main_app, 'show_add_event_view'):
+            self.main_app.show_add_event_view()
+
+    def handle_time_slot_click(self, hour):
+        """Handle time slot click logic for adding events"""
+        # Could open add event dialog with pre-filled time
+        # For now, just show a message
+        QMessageBox.information(self.main_app, "Time Slot", f"Clicked on {hour}:00 time slot")
+
+    def handle_event_click(self, event_title, category):
+        """Handle event click logic for viewing/editing events"""
+        # Could open event details or edit dialog
+        QMessageBox.information(self.main_app, "Event", f"Clicked on event: {event_title} ({category})")
+
+    def handle_date_picker_change(self, selected_date):
+        """Handle date picker change logic"""
+        self.main_app.current_date = selected_date
+        self.update_day_view_date()
+        self.load_day_view_events()
+
+    # BUSINESS LOGIC METHODS
     def load_day_view_events(self):
         """Load events for the current day from event manager"""
         try:
@@ -155,9 +177,9 @@ class DayViewManager:
         except Exception as e:
             import traceback
             traceback.print_exc()
-    #FIX should have different times not fixee
+
     def get_default_hour_for_category(self, category):
-        """Get default hour for event category"""
+        """Get default hour for event category - Business logic"""
         hour_map = {
             "Academic": 9,      # 9 AM
             "Organizational": 14, # 2 PM
@@ -167,12 +189,11 @@ class DayViewManager:
         return hour_map.get(category, 12)  # Default to 12 PM
 
     def add_event_to_time_slot(self, hour, title, category):
-        """Add an event to a specific time slot"""
+        """Add an event to a specific time slot - Data operation"""
         try:
             if not hasattr(self.day_view_ui, 'dayCalendarWidget'):
                 return
             
-           
             start_hour = 7  # Day view starts at 7 AM
             if hour < start_hour or hour > 19:  # Day view ends at 7 PM
                 return
@@ -201,7 +222,7 @@ class DayViewManager:
             traceback.print_exc()
 
     def get_category_color_hex(self, category):
-        """Get hex color for event category"""
+        """Get hex color for event category - Business logic"""
         colors = {
             'Academic': '#4CAF50',      # Green
             'Organizational': '#2196F3', # Blue  
@@ -211,7 +232,7 @@ class DayViewManager:
         return colors.get(category, '#9E9E9E')  # Default gray
 
     def populate_day_view_upcoming_events(self):
-        """Populate upcoming events list in day view"""
+        """Populate upcoming events list in day view - Data operation"""
         try:
             if not hasattr(self.day_view_ui, 'listUpcoming'):
                 return
@@ -243,7 +264,7 @@ class DayViewManager:
             traceback.print_exc()
 
     def filter_day_view_upcoming_events(self, filter_text):
-        """Filter upcoming events in day view"""
+        """Filter upcoming events in day view - Business logic"""
         try:
             if not hasattr(self.day_view_ui, 'listUpcoming'):
                 return
@@ -282,54 +303,8 @@ class DayViewManager:
             import traceback
             traceback.print_exc()
 
-    def previous_day(self):
-        """Navigate to previous day"""
-        try:
-            self.main_app.current_date = self.main_app.current_date.addDays(-1)
-            self.update_day_view_date()
-            self.load_day_view_events()
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-
-    def next_day(self):
-        """Navigate to next day"""
-        try:
-            self.main_app.current_date = self.main_app.current_date.addDays(1)
-            self.update_day_view_date()
-            self.load_day_view_events()
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-
-    def go_to_today(self):
-        """Navigate to today"""
-        try:
-            self.main_app.current_date = QDate.currentDate()
-            self.update_day_view_date()
-            self.load_day_view_events()
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-
-    def handle_view_change(self, view_type):
-        """Handle switching between Day and Month views"""
-        try:
-            if view_type == "Month":
-                # Switch back to calendar view
-                if hasattr(self.main_app, 'show_calendar_view'):
-                    self.main_app.show_calendar_view()
-                elif hasattr(self.main_app, 'setup_calendar_view'):
-                    self.main_app.setup_calendar_view()
-                else:
-                    QMessageBox.information(self.main_app, "Navigation", "Returning to Calendar View")
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            QMessageBox.critical(self.main_app, "Error", f"Could not switch to calendar view: {str(e)}")
-
     def update_day_view_date(self):
-        """Update the date label in day view"""
+        """Update the date label in day view - UI data update"""
         try:
             if hasattr(self.day_view_ui, 'labelCurrentDate'):
                 # Convert QDate to string format directly
@@ -339,10 +314,77 @@ class DayViewManager:
             import traceback
             traceback.print_exc()
 
+    # PUBLIC INTERFACE METHODS
     def refresh_day_view(self):
-        """Refresh day view data and display"""
+        """Refresh day view data and display - Public interface"""
         try:
             self.load_day_view_events()
         except Exception as e:
             import traceback
             traceback.print_exc()
+
+    def get_current_date(self):
+        """Get the current date being displayed"""
+        return self.main_app.current_date
+
+    def set_current_date(self, date):
+        """Set the current date and refresh view"""
+        self.main_app.current_date = date
+        self.update_day_view_date()
+        self.load_day_view_events()
+
+    def get_events_for_current_date(self):
+        """Get events for the currently displayed date"""
+        events_dict = self.event_manager.get_events()
+        return events_dict.get(self.main_app.current_date, [])
+
+    def add_event_to_current_date(self, title, category, hour=None):
+        """Add an event to the current date - Business logic"""
+        try:
+            # Use provided hour or default for category
+            if hour is None:
+                hour = self.get_default_hour_for_category(category)
+            
+            # Add event through event manager
+            self.event_manager.add_event(self.main_app.current_date, title, category)
+            
+            # Refresh the display
+            self.refresh_day_view()
+            
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(self.main_app, "Error", f"Could not add event: {str(e)}")
+
+    def remove_event_from_current_date(self, title):
+        """Remove an event from the current date - Business logic"""
+        try:
+            # Remove event through event manager
+            if hasattr(self.event_manager, 'remove_event'):
+                self.event_manager.remove_event(self.main_app.current_date, title)
+                
+                # Refresh the display
+                self.refresh_day_view()
+            
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(self.main_app, "Error", f"Could not remove event: {str(e)}")
+
+    def get_time_slot_events(self, hour):
+        """Get events for a specific time slot"""
+        current_events = self.get_events_for_current_date()
+        slot_events = []
+        
+        for title, category in current_events:
+            event_hour = self.get_default_hour_for_category(category)
+            if event_hour == hour:
+                slot_events.append((title, category))
+                
+        return slot_events
+
+    def is_time_slot_available(self, hour):
+        """Check if a time slot is available for new events"""
+        slot_events = self.get_time_slot_events(hour)
+        # Could implement logic for maximum events per slot
+        return len(slot_events) < 3  # Example: max 3 events per time slot

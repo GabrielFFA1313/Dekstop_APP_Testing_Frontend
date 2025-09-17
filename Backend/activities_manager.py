@@ -1,19 +1,21 @@
-# ACTIVITIES_MANAGER.PY - Handles activities view functionality (listing and deleting only)
+# ACTIVITIES_MANAGER.PY - Backend logic for activities view functionality (listing and deleting)
 from PyQt6.QtWidgets import QMessageBox, QWidget, QHBoxLayout, QPushButton
 from PyQt6.QtCore import QDate, QTimer, Qt
 from PyQt6 import QtWidgets, QtGui, QtCore
 
 from UI.activities import Ui_MainWindow
+from Controller.activities_controller import ActivitiesController
 
 
 class ActivitiesManager:
-    """Manager class for handling activities view functionality (listing and deleting)"""
+    """Manager class for handling activities view business logic (listing and deleting)"""
     
     def __init__(self, main_app, event_manager):
         self.main_app = main_app
         self.event_manager = event_manager
         self.activities_ui = None
         self.all_activities = []
+        self.activities_controller = None  # Will be initialized when UI is created
     
     # NOTE the geometry helps with the window size
     def setup_activities_view(self):
@@ -34,6 +36,9 @@ class ActivitiesManager:
             self.activities_ui = Ui_MainWindow()
             self.activities_ui.setupUi(self.main_app, user_role=self.main_app.user_role)
             
+            # Initialize controller after UI is created
+            self.activities_controller = ActivitiesController(self)
+            
             # Update table headers after UI setup
             self.update_table_headers()
             
@@ -43,8 +48,8 @@ class ActivitiesManager:
             else:
                 self.activities_ui.event_manager = self.event_manager
             
-            # Setup connections
-            self.setup_activities_connections()
+            # Setup connections through controller
+            self.activities_controller.setup_activities_connections()
             
             # Restore window properties
             self.main_app.setGeometry(geometry)
@@ -101,49 +106,6 @@ class ActivitiesManager:
                 self.activities_ui.activitiesTable.setColumnWidth(0, 120)  # Date & Time
                 self.activities_ui.activitiesTable.setColumnWidth(2, 120)  # Type
                 self.activities_ui.activitiesTable.setColumnWidth(3, 160)  # Location
-
-    def setup_activities_connections(self):
-        """Setup activities-specific connections"""
-        try:
-            # Connect back button
-            if hasattr(self.activities_ui, 'btnback'):
-                try:
-                    self.activities_ui.btnback.clicked.disconnect()
-                except:
-                    pass
-                self.activities_ui.btnback.clicked.connect(self.go_back_to_calendar)
-            
-            # Connect Add Event button - Navigate to AddEventManager
-            if hasattr(self.activities_ui, 'btnAddEvent'):
-                if self.can_add_activities():
-                    try:
-                        self.activities_ui.btnAddEvent.clicked.disconnect()
-                    except:
-                        pass
-                    self.activities_ui.btnAddEvent.clicked.connect(self.show_add_event)
-                else:
-                    # Hide Add Event button for students only
-                    self.activities_ui.btnAddEvent.setVisible(False)
-            
-            # Connect activities table filter
-            if hasattr(self.activities_ui, 'comboActivityType'):
-                try:
-                    self.activities_ui.comboActivityType.currentTextChanged.disconnect()
-                except:
-                    pass
-                self.activities_ui.comboActivityType.currentTextChanged.connect(self.filter_activities_table)
-            
-            # Connect upcoming events filter in activities view
-            if hasattr(self.activities_ui, 'comboUpcomingFilter'):
-                try:
-                    self.activities_ui.comboUpcomingFilter.currentTextChanged.disconnect()
-                except:
-                    pass
-                self.activities_ui.comboUpcomingFilter.currentTextChanged.connect(self.filter_activities_upcoming_events)
-            
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
 
     def load_activities_data_delayed(self):
         """Load activities data with a small delay to ensure UI is ready"""
@@ -280,10 +242,14 @@ class ActivitiesManager:
                 
                 # Actions - Create Edit/Delete buttons only for authorized users
                 if show_actions and hasattr(self.activities_ui, 'create_action_buttons'):
+                    # Use controller callbacks for button actions
+                    edit_callback = self.activities_controller.create_edit_callback(row)
+                    delete_callback = self.activities_controller.create_delete_callback(row)
+                    
                     action_buttons = self.activities_ui.create_action_buttons(
                         row, 
-                        edit_callback=self.edit_activity, 
-                        delete_callback=self.delete_activity
+                        edit_callback=edit_callback, 
+                        delete_callback=delete_callback
                     )
                     if action_buttons:  # Only set if buttons were created
                         table.setCellWidget(row, 4, action_buttons)
@@ -296,11 +262,11 @@ class ActivitiesManager:
             traceback.print_exc()
 
     # =========================
-    # DELETE OPERATION (Fixed)
+    # DELETE OPERATION (Business Logic)
     # =========================
     
     def delete_activity(self, row):
-        """DELETE - Delete an activity (FIXED to work with simplified EventManager)"""
+        """DELETE - Delete an activity (Business logic)"""
         try:
             # Check permission first
             if not self.can_edit_activities():
@@ -378,11 +344,11 @@ class ActivitiesManager:
             return False
     
     # =========================
-    # UI EVENT HANDLERS
+    # BUSINESS LOGIC METHODS
     # =========================
     
     def edit_activity(self, row):
-        """Handle edit activity action - Simple routing to AddEventManager"""
+        """Handle edit activity action - Business logic"""
         try:
             # Check permission first
             if not self.can_edit_activities():
@@ -423,7 +389,7 @@ class ActivitiesManager:
             QMessageBox.critical(self.main_app, "Error", f"Could not open edit view: {str(e)}")
 
     def show_add_event(self):
-        """Show the add event interface - Navigate to AddEventManager"""
+        """Show the add event interface - Business logic"""
         try:
             # Check permission first
             if not self.can_add_activities():
@@ -463,7 +429,7 @@ class ActivitiesManager:
         return colors.get(category, QtGui.QColor(240, 240, 240, 150))
 
     def filter_activities_table(self, filter_type):
-        """Filter activities table based on selected type"""
+        """Filter activities table based on selected type - Business logic"""
         try:
             if not hasattr(self, 'all_activities'):
                 return
@@ -483,7 +449,7 @@ class ActivitiesManager:
             traceback.print_exc()
 
     def populate_activities_upcoming_events(self):
-        """Populate upcoming events list in activities view"""
+        """Populate upcoming events list in activities view - Data operation"""
         try:
             if not hasattr(self.activities_ui, 'listUpcoming'):
                 return
@@ -522,7 +488,7 @@ class ActivitiesManager:
             traceback.print_exc()
 
     def filter_activities_upcoming_events(self, filter_text):
-        """Filter upcoming events in activities view"""
+        """Filter upcoming events in activities view - Business logic"""
         try:
             if not hasattr(self.activities_ui, 'listUpcoming'):
                 return
@@ -569,16 +535,22 @@ class ActivitiesManager:
             traceback.print_exc()
 
     def go_back_to_calendar(self):
-        """Return to calendar from activities"""
+        """Return to calendar from activities - Business logic"""
         try:
-            self.main_app.show_calendar_view()
+            # Try new MVC method names first, then fall back to old ones
+            if hasattr(self.main_app, 'handle_show_calendar_view'):
+                self.main_app.handle_show_calendar_view()
+            elif hasattr(self.main_app, 'show_calendar_view'):
+                self.main_app.show_calendar_view()
+            elif hasattr(self.main_app, 'setup_calendar_view'):
+                self.main_app.setup_calendar_view()
         except Exception as e:
             import traceback
             traceback.print_exc()
             QMessageBox.critical(self.main_app, "Error", f"Could not return to calendar: {str(e)}")
 
     def refresh_activities(self):
-        """Refresh activities data and display"""
+        """Refresh activities data and display - Public interface"""
         try:
             self.load_activities_data()
             self.populate_activities_upcoming_events()

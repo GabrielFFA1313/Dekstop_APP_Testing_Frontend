@@ -345,10 +345,16 @@
         "title": "Web Development Semina",
         "category": "Academic"
       }
+    ],
+    "2025-09-18": [
+      {
+        "title": "testing 10",
+        "category": "Holiday"
+      }
     ]
   },
   "metadata": {
-    "last_updated": "2025-09-16T03:15:15.943048",
-    "total_events": 58
+    "last_updated": "2025-09-17T11:48:03.962946",
+    "total_events": 59
   }
 }
