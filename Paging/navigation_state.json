@@ -1,0 +1,119 @@
+{
+  "current_route": {
+    "view": "calendar",
+    "params": {}
+  },
+  "navigation_history": [
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T19:04:36.933352"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T19:04:53.229446"
+    },
+    {
+      "view": "activities",
+      "params": {},
+      "timestamp": "2025-09-17T19:04:54.620861"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T19:05:02.823440"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T19:05:06.164381"
+    },
+    {
+      "view": "activities",
+      "params": {},
+      "timestamp": "2025-09-17T19:05:07.284823"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T19:11:30.872663"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T19:11:36.433549"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T19:11:44.771177"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T19:11:48.964813"
+    },
+    {
+      "view": "search",
+      "params": {
+        "query": "test"
+      },
+      "timestamp": "2025-09-17T19:11:52.440525"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T19:11:56.618503"
+    },
+    {
+      "view": "activities",
+      "params": {},
+      "timestamp": "2025-09-17T19:11:57.846830"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T19:11:58.780392"
+    },
+    {
+      "view": "activities",
+      "params": {},
+      "timestamp": "2025-09-17T19:12:00.490797"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T19:14:34.444015"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-17T19:14:37.177777"
+    },
+    {
+      "view": "activities",
+      "params": {},
+      "timestamp": "2025-09-17T19:14:39.224821"
+    }
+  ],
+  "view_states": {
+    "calendar": {
+      "selected_date": "2025-09-17",
+      "filter_selection": "Academic Activities"
+    },
+    "activities": {
+      "activity_filter": "All Events",
+      "upcoming_filter": "All Events"
+    }
+  },
+  "metadata": {
+    "last_updated": "2025-09-17T19:14:39.829821",
+    "app_version": "1.0",
+    "user_role": "student",
+    "data_stats": {
+      "history_count": 18,
+      "view_states_count": 2
+    }
+  }
+}
