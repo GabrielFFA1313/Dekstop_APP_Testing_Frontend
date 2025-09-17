@@ -1,5 +1,5 @@
-# EVENT MANAGER - Simplified for data storage and basic operations only
-from PyQt6.QtCore import QDate
+# EVENT MANAGER - Enhanced to store time information
+from PyQt6.QtCore import QDate, QTime
 import json
 import os
 from datetime import datetime
@@ -20,6 +20,14 @@ class EventManager:
         """Convert string to QDate object"""
         return QDate.fromString(date_string, "yyyy-MM-dd")
     
+    def time_to_string(self, qtime):
+        """Convert QTime to string format for JSON"""
+        return qtime.toString("hh:mm")
+    
+    def string_to_time(self, time_string):
+        """Convert string to QTime object"""
+        return QTime.fromString(time_string, "hh:mm")
+    
     def load_from_json(self):
         """Load events from JSON file"""
         try:
@@ -39,7 +47,22 @@ class EventManager:
                     for event in events_list:
                         title = event.get('title', '')
                         category = event.get('category', 'Academic')
-                        self._event_map[qdate].append((title, category))
+                        
+                        # Handle time data (backward compatibility)
+                        if 'start_time' in event:
+                            start_time = self.string_to_time(event['start_time'])
+                        else:
+                            # Use default time for backward compatibility
+                            start_time = self.get_default_time_for_category(category)
+                        
+                        if 'end_time' in event:
+                            end_time = self.string_to_time(event['end_time'])
+                        else:
+                            # Use default end time
+                            end_time = start_time.addSecs(3600)  # Add 1 hour
+                        
+                        # Store as tuple: (title, category, start_time, end_time)
+                        self._event_map[qdate].append((title, category, start_time, end_time))
                 
             else:
                 print(f"JSON file {self.json_file_path} not found. Starting with empty events.")
@@ -58,11 +81,24 @@ class EventManager:
                 date_string = self.date_to_string(qdate)
                 events_data[date_string] = []
                 
-                for title, category in events_list:
-                    events_data[date_string].append({
-                        'title': title,
-                        'category': category
-                    })
+                for event_tuple in events_list:
+                    if len(event_tuple) == 4:  # New format with times
+                        title, category, start_time, end_time = event_tuple
+                        events_data[date_string].append({
+                            'title': title,
+                            'category': category,
+                            'start_time': self.time_to_string(start_time),
+                            'end_time': self.time_to_string(end_time)
+                        })
+                    else:  # Old format (backward compatibility)
+                        title, category = event_tuple
+                        default_time = self.get_default_time_for_category(category)
+                        events_data[date_string].append({
+                            'title': title,
+                            'category': category,
+                            'start_time': self.time_to_string(default_time),
+                            'end_time': self.time_to_string(default_time.addSecs(3600))
+                        })
             
             # Prepare final JSON structure
             json_data = {
@@ -84,6 +120,16 @@ class EventManager:
             print(f"Error saving events to JSON: {e}")
             return False
     
+    def get_default_time_for_category(self, category):
+        """Get default QTime for event category"""
+        time_map = {
+            "Academic": QTime(9, 0),      # 9:00 AM
+            "Organizational": QTime(14, 0), # 2:00 PM
+            "Deadline": QTime(17, 0),     # 5:00 PM
+            "Holiday": QTime(10, 0)       # 10:00 AM
+        }
+        return time_map.get(category, QTime(12, 0))  # Default to 12:00 PM
+    
     # Basic data operations (getters/setters)
     def get_events(self):
         """Get all events"""
@@ -99,17 +145,30 @@ class EventManager:
         if not events_list:  # Remove date if no events
             self._event_map.pop(date, None)
     
-    def add_event_to_memory(self, date, title, category):
-        """Add event to memory only (no save)"""
+    def add_event_to_memory(self, date, title, category, start_time=None, end_time=None):
+        """Add event to memory only (no save) with time support"""
         self._event_map.setdefault(date, [])
-        self._event_map[date].append((title, category))
+        
+        # Use provided times or defaults
+        if start_time is None:
+            start_time = self.get_default_time_for_category(category)
+        if end_time is None:
+            end_time = start_time.addSecs(3600)  # Default 1 hour duration
+        
+        # Store as tuple: (title, category, start_time, end_time)
+        self._event_map[date].append((title, category, start_time, end_time))
     
     def remove_event_from_memory(self, date, title):
         """Remove event from memory only (no save)"""
         if date in self._event_map:
-            self._event_map[date] = [
-                (t, c) for t, c in self._event_map[date] if t != title
-            ]
+            # Handle both old and new tuple formats
+            new_events = []
+            for event_tuple in self._event_map[date]:
+                event_title = event_tuple[0]  # Title is always first
+                if event_title != title:
+                    new_events.append(event_tuple)
+            
+            self._event_map[date] = new_events
             if not self._event_map[date]:
                 del self._event_map[date]
     
@@ -120,7 +179,10 @@ class EventManager:
         
         for date, events in sorted(self._event_map.items()):
             if date >= current_date:
-                for title, category in events:
+                for event_tuple in events:
+                    title = event_tuple[0]
+                    category = event_tuple[1]
+                    
                     if filter_category == "All" or category == filter_category:
                         upcoming.append((date, title, category))
                         if limit and len(upcoming) >= limit:
@@ -131,7 +193,10 @@ class EventManager:
         """Get all events of a specific category"""
         categorized_events = []
         for date, events in self._event_map.items():
-            for title, event_category in events:
+            for event_tuple in events:
+                title = event_tuple[0]
+                event_category = event_tuple[1]
+                
                 if event_category == category:
                     categorized_events.append((date, title, event_category))
         
@@ -142,7 +207,9 @@ class EventManager:
         range_events = []
         for date, events in self._event_map.items():
             if start_date <= date <= end_date:
-                for title, category in events:
+                for event_tuple in events:
+                    title = event_tuple[0]
+                    category = event_tuple[1]
                     range_events.append((date, title, category))
         
         return sorted(range_events, key=lambda x: x[0])
@@ -158,7 +225,8 @@ class EventManager:
         """Get count of events by category"""
         counts = {}
         for events in self._event_map.values():
-            for title, category in events:
+            for event_tuple in events:
+                category = event_tuple[1]
                 counts[category] = counts.get(category, 0) + 1
         return counts
     
@@ -168,7 +236,9 @@ class EventManager:
         search_term = search_term.lower()
         
         for date, events in self._event_map.items():
-            for title, category in events:
+            for event_tuple in events:
+                title = event_tuple[0]
+                category = event_tuple[1]
                 match = False
                 
                 if search_in_title and search_term in title.lower():
@@ -181,6 +251,46 @@ class EventManager:
                     results.append((date, title, category))
         
         return sorted(results, key=lambda x: x[0])
+    
+    # NEW TIME-RELATED METHODS
+    def get_event_time(self, date, title):
+        """Get the time for a specific event"""
+        events = self.get_events_for_date(date)
+        for event_tuple in events:
+            if event_tuple[0] == title:
+                if len(event_tuple) >= 3:
+                    return event_tuple[2]  # start_time
+                else:
+                    # Fallback to default time
+                    return self.get_default_time_for_category(event_tuple[1])
+        return QTime(12, 0)  # Default fallback
+    
+    def get_events_for_date_with_times(self, date):
+        """Get events for a date with full time information"""
+        events = self.get_events_for_date(date)
+        result = []
+        
+        for event_tuple in events:
+            if len(event_tuple) >= 4:
+                title, category, start_time, end_time = event_tuple
+                result.append({
+                    'title': title,
+                    'category': category,
+                    'start_time': start_time,
+                    'end_time': end_time
+                })
+            elif len(event_tuple) >= 2:
+                title, category = event_tuple[:2]
+                start_time = self.get_default_time_for_category(category)
+                end_time = start_time.addSecs(3600)
+                result.append({
+                    'title': title,
+                    'category': category,
+                    'start_time': start_time,
+                    'end_time': end_time
+                })
+        
+        return result
     
     def refresh_events_display(self):
         """Refresh the events display after adding/removing events"""
@@ -216,42 +326,3 @@ class EventManager:
         """Legacy method - removes from memory and saves"""
         self.remove_event_from_memory(date, title)
         return self.save_to_json()
-    
-    def handle_new_event(self, event_data):
-        """Legacy method for handling new events from forms"""
-        try:
-            title = event_data['title']
-            start_date_str = event_data['start_date']
-            
-            # Parse the date string (assuming MM/dd/yyyy format)
-            if start_date_str:
-                date_parts = start_date_str.split('/')
-                if len(date_parts) == 3:
-                    month, day, year = map(int, date_parts)
-                    event_date = QDate(year, month, day)
-                    
-                    # Determine category based on target audience
-                    target_students = event_data.get('target_students', False)
-                    target_faculty = event_data.get('target_faculty', False)
-                    target_org_officers = event_data.get('target_org_officers', False)
-                    target_all = event_data.get('target_all', False)
-                    
-                    if target_all or (target_students and target_faculty and target_org_officers):
-                        category = "Academic"
-                    elif target_students:
-                        category = "Academic"
-                    elif target_faculty:
-                        category = "Academic"
-                    elif target_org_officers:
-                        category = "Organizational"
-                    else:
-                        category = "Academic"  # Default
-                    
-                    # Add event and save
-                    if self.add_event(event_date, title, category):
-                        self.refresh_events_display()
-                        return True
-                        
-        except Exception as e:
-            print(f"Error handling new event: {e}")
-            return False

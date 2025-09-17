@@ -128,14 +128,24 @@ class ActivitiesManager:
             
             # Convert events to activities format
             for date, events in all_events_dict.items():
-                for title, category in events:
+                # Get events with time information for this date
+                events_with_times = self.event_manager.get_events_for_date_with_times(date)
+                
+                for event_data in events_with_times:
+                    title = event_data['title']
+                    category = event_data['category']
+                    start_time = event_data['start_time']
+                    
+                    # Format time as string
+                    time_str = start_time.toString("h:mm AP")  # e.g., "2:30 PM"
+                    
                     # Create activity entry
                     activity = {
                         'date': date,
                         'title': title,
                         'category': category,
                         'location': self.get_default_location(category),
-                        'time': self.get_default_time(category)
+                        'time': time_str
                     }
                     all_activities.append(activity)
             

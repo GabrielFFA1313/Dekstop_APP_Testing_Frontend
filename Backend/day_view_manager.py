@@ -132,14 +132,17 @@ class DayViewManager:
             # Clear existing events from time slots
             self.clear_day_view_events()
             
-            # Get events for the current date
-            events_dict = self.event_manager.get_events()
-            current_date_events = events_dict.get(self.main_app.current_date, [])
+            # Get events for the current date with time information
+            events_with_times = self.event_manager.get_events_for_date_with_times(self.main_app.current_date)
             
-            # Add events to appropriate time slots
-            for title, category in current_date_events:
-                # Assign default times based on category
-                hour = self.get_default_hour_for_category(category)
+            # Add events to appropriate time slots using actual times
+            for event_data in events_with_times:
+                title = event_data['title']
+                category = event_data['category']
+                start_time = event_data['start_time']
+                
+                # Get hour from actual start time
+                hour = start_time.hour()
                 self.add_event_to_time_slot(hour, title, category)
             
             # Update the upcoming events list in day view

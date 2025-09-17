@@ -306,20 +306,22 @@ class AddEventManager:
             title = event_data['title'].strip()
             date = event_data['start_date']
             category = self.determine_category_from_event_type(event_data.get('type', 'Academic'))
+            start_time = event_data.get('start_time')
+            end_time = event_data.get('end_time')
             
             # Validate date
             if not isinstance(date, QDate):
                 raise ValueError("Date must be a QDate object")
             
-            # Add to event manager memory
-            self.event_manager.add_event_to_memory(date, title, category)
+            # Add to event manager memory with time information
+            self.event_manager.add_event_to_memory(date, title, category, start_time, end_time)
             
             # Save to JSON
             if self.event_manager.save_to_json():
                 # Refresh display
                 self.refresh_displays()
                 
-                print(f"Event created: {title} on {self.event_manager.date_to_string(date)}")
+                print(f"Event created: {title} on {self.event_manager.date_to_string(date)} at {start_time.toString('hh:mm')}")
                 return True
             else:
                 # Rollback on save failure
@@ -347,6 +349,8 @@ class AddEventManager:
             new_title = updated_data.get('title', original_title).strip()
             new_category = self.determine_category_from_event_type(updated_data.get('type', 'Academic'))
             new_date = updated_data.get('start_date', original_date)
+            new_start_time = updated_data.get('start_time')
+            new_end_time = updated_data.get('end_time')
             
             if not new_title:
                 raise ValueError("Updated title cannot be empty")
@@ -362,15 +366,15 @@ class AddEventManager:
                 # Remove original event
                 self.event_manager.remove_event_from_memory(original_date, original_title)
                 
-                # Add updated event
-                self.event_manager.add_event_to_memory(new_date, new_title, new_category)
+                # Add updated event with time information
+                self.event_manager.add_event_to_memory(new_date, new_title, new_category, new_start_time, new_end_time)
                 
                 # Save to JSON
                 if self.event_manager.save_to_json():
                     # Refresh display
                     self.refresh_displays()
                     
-                    print(f"Event updated: {original_title} -> {new_title}")
+                    print(f"Event updated: {original_title} -> {new_title} at {new_start_time.toString('hh:mm')}")
                     return True
                 else:
                     raise Exception("Failed to save changes to JSON file")
