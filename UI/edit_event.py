@@ -1,4 +1,4 @@
-# EDIT_EVENT.py - Edit Event UI with Compact Layout
+# EDIT_EVENT.py - Edit Event UI with 12-Hour Time Format (1:00-12:00)
 import sys
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QApplication, QMainWindow, QDateEdit, QTimeEdit, QTextEdit
@@ -27,7 +27,7 @@ class Ui_MainWindow(BaseUi):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def setup_edit_event_section(self):
-        """Setup the edit event form section - COMPACT VERSION"""
+        """Setup the edit event form section - 12-HOUR TIME FORMAT"""
         # Create a scroll area for better handling of different screen sizes
         self.scrollArea = QtWidgets.QScrollArea()
         self.scrollArea.setWidgetResizable(True)
@@ -166,7 +166,7 @@ class Ui_MainWindow(BaseUi):
         self.editEventLayout.addWidget(self.headerContainer)
 
     def setup_event_form(self):
-        """Setup the event form fields - LARGER FONTS AND HEIGHTS"""
+        """Setup the event form fields - 12-HOUR TIME FORMAT (1-12 with AM/PM)"""
         # Create a bordered container for the form
         self.formContainer = QtWidgets.QFrame()
         self.formContainer.setStyleSheet("""
@@ -384,22 +384,24 @@ class Ui_MainWindow(BaseUi):
         self.labelStartTime.setWordWrap(True)  # Allow text wrapping
         self.formLayout.addWidget(self.labelStartTime, row, 2, Qt.AlignmentFlag.AlignTop)
 
-    # Start Time Layout with AM/PM buttons - LARGER
+        # Start Time Layout with AM/PM buttons - 12-HOUR FORMAT
         self.startTimeWidget = QtWidgets.QWidget()
         self.startTimeLayout = QtWidgets.QHBoxLayout(self.startTimeWidget)
         self.startTimeLayout.setContentsMargins(0, 0, 0, 0)
-        self.startTimeLayout.setSpacing(5)  # Larger spacing
+        self.startTimeLayout.setSpacing(5)
         
+        # UPDATED: 12-Hour Time Picker (1-12)
         self.timeStart = QTimeEdit()
-        self.timeStart.setTime(QTime(9, 0))
-        self.timeStart.setDisplayFormat("hh:mm")
+        self.timeStart.setTime(QTime(9, 0))  # Default 9:00 (will be 9 AM)
+        self.timeStart.setDisplayFormat("h:mm")  # CHANGED: 'h' shows 1-12, 'hh' shows 01-12
+        self.timeStart.setTimeRange(QTime(1, 0), QTime(12, 59))  # Limit to 1:00-12:59
         self.timeStart.setStyleSheet(input_style)
         self.timeStart.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed)
         self.startTimeLayout.addWidget(self.timeStart, 1)
         
         self.btnStartAM = QtWidgets.QPushButton("AM")
         self.btnStartAM.setCheckable(True)
-        self.btnStartAM.setChecked(True)
+        self.btnStartAM.setChecked(True)  # Default to AM
         self.btnStartAM.setFixedSize(40, 35)  # Larger buttons
         self.btnStartAM.clicked.connect(lambda: self.set_am_pm(self.btnStartAM, self.btnStartPM))
         
@@ -408,7 +410,7 @@ class Ui_MainWindow(BaseUi):
         self.btnStartPM.setFixedSize(40, 35)  # Larger buttons
         self.btnStartPM.clicked.connect(lambda: self.set_am_pm(self.btnStartPM, self.btnStartAM))
         
-       # AM/PM button styling - LARGER
+       # AM/PM button styling
         ampm_style = """
             QPushButton {
                 border: 1px solid #ccc;
@@ -440,7 +442,6 @@ class Ui_MainWindow(BaseUi):
         self.labelEndDate.setWordWrap(True)  # Allow text wrapping
         self.formLayout.addWidget(self.labelEndDate, row, 0, Qt.AlignmentFlag.AlignTop)
         
-        
         self.dateEnd = QDateEdit()
         self.dateEnd.setDate(QDate.currentDate())
         self.dateEnd.setCalendarPopup(True)
@@ -455,16 +456,17 @@ class Ui_MainWindow(BaseUi):
         self.labelEndTime.setWordWrap(True)  # Allow text wrapping
         self.formLayout.addWidget(self.labelEndTime, row, 2, Qt.AlignmentFlag.AlignTop)
         
-        # End Time Layout with AM/PM buttons - LARGER
+        # End Time Layout with AM/PM buttons - 12-HOUR FORMAT
         self.endTimeWidget = QtWidgets.QWidget()
         self.endTimeLayout = QtWidgets.QHBoxLayout(self.endTimeWidget)
         self.endTimeLayout.setContentsMargins(0, 0, 0, 0)
-        self.endTimeLayout.setSpacing(5)  # Larger spacing
+        self.endTimeLayout.setSpacing(5)
         
-        
+        # UPDATED: 12-Hour Time Picker (1-12)
         self.timeEnd = QTimeEdit()
-        self.timeEnd.setTime(QTime(17, 0))
-        self.timeEnd.setDisplayFormat("hh:mm")
+        self.timeEnd.setTime(QTime(5, 0))  # Default 5:00 (will be 5 PM)
+        self.timeEnd.setDisplayFormat("h:mm")  # CHANGED: 'h' shows 1-12, 'hh' shows 01-12
+        self.timeEnd.setTimeRange(QTime(1, 0), QTime(12, 59))  # Limit to 1:00-12:59
         self.timeEnd.setStyleSheet(input_style)
         self.timeEnd.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed)
         self.endTimeLayout.addWidget(self.timeEnd, 1)
@@ -476,7 +478,7 @@ class Ui_MainWindow(BaseUi):
         
         self.btnEndPM = QtWidgets.QPushButton("PM")
         self.btnEndPM.setCheckable(True)
-        self.btnEndPM.setChecked(True)
+        self.btnEndPM.setChecked(True)  # Default to PM for end time
         self.btnEndPM.setFixedSize(40, 35)  # Larger buttons
         self.btnEndPM.clicked.connect(lambda: self.set_am_pm(self.btnEndPM, self.btnEndAM))
         
@@ -588,9 +590,9 @@ class Ui_MainWindow(BaseUi):
         self.btnCancel.clicked.connect(self.cancel_event)
         self.actionButtonsLayout.addWidget(self.btnCancel)
         
-        # Update button - SMALLER (changed from Save)
+        # Update button - LARGER (changed from Save)
         self.btnUpdate = QtWidgets.QPushButton("Update")
-        self.btnUpdate.setFixedSize(100, 45)  # Smaller size
+        self.btnUpdate.setFixedSize(100, 45)  # Larger size
         self.btnUpdate.setStyleSheet("""
              QPushButton {
                 background-color: #084924;
@@ -657,8 +659,9 @@ class Ui_MainWindow(BaseUi):
         pass
 
     def populate_event_data(self, event_data):
-        """Populate form fields with existing event data"""
+        """Populate form fields with existing event data - IMPROVED 12-HOUR TIME HANDLING"""
         if event_data:
+            # Basic fields
             self.inputEventTitle.setText(event_data.get('title', ''))
             self.inputDescription.setPlainText(event_data.get('description', ''))
             self.inputLocation.setText(event_data.get('location', ''))
@@ -668,6 +671,86 @@ class Ui_MainWindow(BaseUi):
             index = self.comboEventType.findText(event_type)
             if index >= 0:
                 self.comboEventType.setCurrentIndex(index)
+            
+            # Set dates
+            if 'start_date' in event_data:
+                self.dateStart.setDate(event_data['start_date'])
+            if 'end_date' in event_data:
+                self.dateEnd.setDate(event_data['end_date'])
+            
+            # Set times with proper 12-hour format
+            if 'start_time' in event_data:
+                start_time = event_data['start_time']
+                if isinstance(start_time, QTime):
+                    self.set_12h_time_display(start_time, self.timeStart, self.btnStartAM, self.btnStartPM)
+            
+            if 'end_time' in event_data:
+                end_time = event_data['end_time']  
+                if isinstance(end_time, QTime):
+                    self.set_12h_time_display(end_time, self.timeEnd, self.btnEndAM, self.btnEndPM)
+            
+            # Set target audience
+            if 'target_audience' in event_data:
+                audience = event_data['target_audience']
+                if isinstance(audience, list):
+                    self.checkStudents.setChecked('Students' in audience)
+                    self.checkFaculty.setChecked('Faculty' in audience)
+                    self.checkOrgOfficer.setChecked('Organization Officer' in audience)
+                    self.checkAll.setChecked('All' in audience)
+
+    def set_12h_time_display(self, qtime_24h, time_edit, am_btn, pm_btn):
+        """Set 12-hour time display from 24-hour QTime"""
+        hour_24 = qtime_24h.hour()
+        minute = qtime_24h.minute()
+        
+        if hour_24 == 0:
+            # 12 AM
+            display_hour = 12
+            am_btn.setChecked(True)
+            pm_btn.setChecked(False)
+        elif hour_24 < 12:
+            # 1-11 AM
+            display_hour = hour_24
+            am_btn.setChecked(True)
+            pm_btn.setChecked(False)
+        elif hour_24 == 12:
+            # 12 PM
+            display_hour = 12
+            am_btn.setChecked(False)
+            pm_btn.setChecked(True)
+        else:
+            # 1-11 PM
+            display_hour = hour_24 - 12
+            am_btn.setChecked(False)
+            pm_btn.setChecked(True)
+        
+        display_time = QTime(display_hour, minute)
+        time_edit.setTime(display_time)
+
+    def clear_form(self):
+        """Clear all form fields - UPDATED FOR 12-HOUR TIME"""
+        self.inputEventTitle.clear()
+        self.inputDescription.clear()
+        self.inputLocation.clear()
+        self.comboEventType.setCurrentIndex(0)
+        self.dateStart.setDate(QDate.currentDate())
+        self.dateEnd.setDate(QDate.currentDate())
+        
+        # Set default times in 12-hour format
+        self.timeStart.setTime(QTime(9, 0))  # 9:00 (will show as 9 AM)
+        self.timeEnd.setTime(QTime(5, 0))    # 5:00 (will show as 5 PM)
+        
+        # Set correct AM/PM buttons for defaults
+        self.btnStartAM.setChecked(True)   # 9 AM
+        self.btnStartPM.setChecked(False)
+        self.btnEndAM.setChecked(False)    # 5 PM
+        self.btnEndPM.setChecked(True)
+        
+        # Reset checkboxes
+        self.checkStudents.setChecked(False)
+        self.checkFaculty.setChecked(False)
+        self.checkOrgOfficer.setChecked(False)
+        self.checkAll.setChecked(False)
 
     def go_back_to_calendar(self):
         """Navigate back to calendar view"""

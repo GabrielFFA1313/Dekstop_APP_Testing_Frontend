@@ -1,100 +1,130 @@
 {
   "current_route": {
-    "view": "calendar",
+    "view": "activities",
     "params": {}
   },
   "navigation_history": [
     {
-      "view": "calendar",
-      "params": {},
-      "timestamp": "2025-09-17T19:04:36.933352"
-    },
-    {
-      "view": "calendar",
-      "params": {},
-      "timestamp": "2025-09-17T19:04:53.229446"
-    },
-    {
-      "view": "activities",
-      "params": {},
-      "timestamp": "2025-09-17T19:04:54.620861"
-    },
-    {
-      "view": "calendar",
-      "params": {},
-      "timestamp": "2025-09-17T19:05:02.823440"
-    },
-    {
-      "view": "calendar",
-      "params": {},
-      "timestamp": "2025-09-17T19:05:06.164381"
+      "view": "edit_event",
+      "params": {
+        "event_data": {
+          "title": "Project Presentatio",
+          "category": "Academic",
+          "date": "2025-09-25",
+          "location": "Main Building",
+          "time": "9:00 AM"
+        }
+      },
+      "timestamp": "2025-09-19T00:05:39.315422"
     },
     {
       "view": "activities",
       "params": {},
-      "timestamp": "2025-09-17T19:05:07.284823"
+      "timestamp": "2025-09-19T00:05:56.087874"
+    },
+    {
+      "view": "add_event",
+      "params": {},
+      "timestamp": "2025-09-19T00:05:58.288670"
     },
     {
       "view": "calendar",
       "params": {},
-      "timestamp": "2025-09-17T19:11:30.872663"
+      "timestamp": "2025-09-19T00:45:30.549485"
     },
     {
       "view": "calendar",
       "params": {},
-      "timestamp": "2025-09-17T19:11:36.433549"
+      "timestamp": "2025-09-19T00:45:33.547581"
+    },
+    {
+      "view": "activities",
+      "params": {},
+      "timestamp": "2025-09-19T00:45:35.445038"
+    },
+    {
+      "view": "add_event",
+      "params": {},
+      "timestamp": "2025-09-20T02:43:24.974327"
+    },
+    {
+      "view": "add_event",
+      "params": {},
+      "timestamp": "2025-09-20T02:43:27.574280"
     },
     {
       "view": "calendar",
       "params": {},
-      "timestamp": "2025-09-17T19:11:44.771177"
+      "timestamp": "2025-09-20T02:43:29.127714"
+    },
+    {
+      "view": "day_view",
+      "params": {
+        "date": "2025-09-17"
+      },
+      "timestamp": "2025-09-20T02:43:31.370739"
     },
     {
       "view": "calendar",
-      "params": {},
-      "timestamp": "2025-09-17T19:11:48.964813"
+      "params": {
+        "selected_date": "2025-09-18"
+      },
+      "timestamp": "2025-09-20T02:43:34.079864"
     },
     {
       "view": "search",
       "params": {
-        "query": "test"
+        "query": "Project"
       },
-      "timestamp": "2025-09-17T19:11:52.440525"
+      "timestamp": "2025-09-20T02:43:35.970912"
     },
     {
       "view": "calendar",
       "params": {},
-      "timestamp": "2025-09-17T19:11:56.618503"
+      "timestamp": "2025-09-20T02:43:36.705938"
     },
     {
       "view": "activities",
       "params": {},
-      "timestamp": "2025-09-17T19:11:57.846830"
+      "timestamp": "2025-09-20T02:43:37.512951"
+    },
+    {
+      "view": "add_event",
+      "params": {},
+      "timestamp": "2025-09-20T02:43:38.547671"
     },
     {
       "view": "calendar",
       "params": {},
-      "timestamp": "2025-09-17T19:11:58.780392"
+      "timestamp": "2025-09-20T02:43:39.627222"
     },
     {
       "view": "activities",
       "params": {},
-      "timestamp": "2025-09-17T19:12:00.490797"
+      "timestamp": "2025-09-20T02:43:40.522862"
     },
     {
-      "view": "calendar",
-      "params": {},
-      "timestamp": "2025-09-17T19:14:34.444015"
-    },
-    {
-      "view": "calendar",
-      "params": {},
-      "timestamp": "2025-09-17T19:14:37.177777"
+      "view": "edit_event",
+      "params": {
+        "event_data": {
+          "title": "Project Presentatio",
+          "category": "Academic",
+          "date": "2025-09-25",
+          "location": "Main Building",
+          "time": "9:00 AM"
+        }
+      },
+      "timestamp": "2025-09-20T02:43:41.171253"
     },
     {
       "view": "activities",
       "params": {},
-      "timestamp": "2025-09-17T19:14:39.224821"
+      "timestamp": "2025-09-20T02:43:49.855861"
+    },
+    {
+      "view": "calendar",
+      "params": {},
+      "timestamp": "2025-09-20T02:43:54.740071"
     }
   ],
   "view_states": {
@@ -105,15 +135,25 @@
     "activities": {
       "activity_filter": "All Events",
       "upcoming_filter": "All Events"
+    },
+    "edit_event": {
+      "mode": "edit"
+    },
+    "add_event": {
+      "mode": "add"
+    },
+    "day_view": {
+      "current_date": "2025-09-18",
+      "filter_selection": "All Events"
     }
   },
   "metadata": {
-    "last_updated": "2025-09-17T19:14:39.829821",
+    "last_updated": "2025-09-20T02:43:55.869114",
     "app_version": "1.0",
-    "user_role": "student",
+    "user_role": "admin",
     "data_stats": {
-      "history_count": 18,
-      "view_states_count": 2
+      "history_count": 20,
+      "view_states_count": 5
     }
   }
 }

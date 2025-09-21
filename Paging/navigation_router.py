@@ -55,6 +55,7 @@ class NavigationRouter:
         # All users can access calendar as default
         return 'calendar'
     
+    # check if a user can go to this view
     def validate_and_sanitize_route(self, route):
         """Validate route against current user permissions and sanitize if needed"""
         if not route or 'view' not in route:
@@ -118,6 +119,7 @@ class NavigationRouter:
         except Exception as e:
             return False
     
+    # If what was the last view by the user it will show up again when you run the app again
     def load_navigation_state(self):
         """Load navigation state from JSON file with permission validation"""
         try:
@@ -241,7 +243,7 @@ class NavigationRouter:
             
         except Exception as e:
             return False
-    
+    # Dates data from the pyqt into json
     def _serialize_view_state(self, state):
         """Convert PyQt objects to JSON-serializable format with size optimization"""
         if not isinstance(state, dict):
@@ -261,7 +263,7 @@ class NavigationRouter:
                 serialized[key] = value
         
         return serialized
-    
+    # Dates data from json into pyqt
     def _deserialize_view_state(self, state):
         """Convert JSON data back to PyQt objects"""
         if not isinstance(state, dict):

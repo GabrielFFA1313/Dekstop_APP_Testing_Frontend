@@ -1,53 +1,5 @@
 {
   "events": {
-    "2025-08-04": [
-      {
-        "title": "Start of Classes",
-        "category": "Academic",
-        "start_time": "09:00",
-        "end_time": "10:00"
-      }
-    ],
-    "2025-08-12": [
-      {
-        "title": "Organization Expo",
-        "category": "Organizational",
-        "start_time": "14:00",
-        "end_time": "15:00"
-      }
-    ],
-    "2025-08-15": [
-      {
-        "title": "Assignment #1 Due",
-        "category": "Deadline",
-        "start_time": "17:00",
-        "end_time": "18:00"
-      }
-    ],
-    "2025-08-19": [
-      {
-        "title": "Project Milestone 1",
-        "category": "Deadline",
-        "start_time": "17:00",
-        "end_time": "18:00"
-      }
-    ],
-    "2025-08-21": [
-      {
-        "title": "Ninoy Aquino Day",
-        "category": "Holiday",
-        "start_time": "10:00",
-        "end_time": "11:00"
-      }
-    ],
-    "2025-08-25": [
-      {
-        "title": "Programming Assignment Due",
-        "category": "Deadline",
-        "start_time": "17:00",
-        "end_time": "18:00"
-      }
-    ],
     "2025-08-30": [
       {
         "title": "National Heroes Day",
@@ -174,22 +126,6 @@
         "category": "Academic",
         "start_time": "09:00",
         "end_time": "10:00"
-      }
-    ],
-    "2025-10-20": [
-      {
-        "title": "Tech Talk: Industry Trends",
-        "category": "Academic",
-        "start_time": "09:00",
-        "end_time": "10:00"
-      }
-    ],
-    "2025-10-22": [
-      {
-        "title": "Alumni Homecoming",
-        "category": "Organizational",
-        "start_time": "14:00",
-        "end_time": "15:00"
       }
     ],
     "2025-10-25": [
@@ -392,36 +328,12 @@
         "end_time": "11:00"
       }
     ],
-    "2025-06-30": [
-      {
-        "title": "End of Quarter Assessment",
-        "category": "Organizational",
-        "start_time": "14:00",
-        "end_time": "15:00"
-      }
-    ],
     "2025-11-30": [
       {
         "title": "Bonifacio Day1",
         "category": "Holiday",
         "start_time": "10:00",
         "end_time": "11:00"
-      }
-    ],
-    "2025-06-18": [
-      {
-        "title": "Database Systems Test",
-        "category": "Organizational",
-        "start_time": "14:00",
-        "end_time": "15:00"
-      }
-    ],
-    "2025-08-22": [
-      {
-        "title": "Programming Contes",
-        "category": "Organizational",
-        "start_time": "14:00",
-        "end_time": "15:00"
       }
     ],
     "2025-09-25": [
@@ -522,11 +434,17 @@
         "category": "Academic",
         "start_time": "15:00",
         "end_time": "14:00"
+      },
+      {
+        "title": "test",
+        "category": "Academic",
+        "start_time": "11:30",
+        "end_time": "17:00"
       }
     ]
   },
   "metadata": {
-    "last_updated": "2025-09-17T18:27:03.997723",
-    "total_events": 68
+    "last_updated": "2025-09-20T02:43:47.088986",
+    "total_events": 58
   }
 }

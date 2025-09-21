@@ -874,7 +874,7 @@ def main():
     # - "student": Can only view events, cannot add/edit/delete
     
     # Change this to test different permission levels:
-    user_role = "student"  # Try: "admin", "organization", "faculty", "student"
+    user_role = "admin"  # Try: "admin", "organization", "faculty", "student"
     
     try:
         main_window = MainApplication(user_role=user_role)

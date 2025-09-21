@@ -20,6 +20,68 @@ class AddEventManager:
         self.edit_event_data = None
         self.add_event_controller = None  # Initialize after UI is created
 
+    # 12-HOUR TIME CONVERSION METHODS
+    def format_time_to_12h(self, qtime):
+        """Convert QTime to 12-hour format string"""
+        hour = qtime.hour()
+        minute = qtime.minute()
+        
+        if hour == 0:
+            return f"12:{minute:02d} AM"
+        elif hour < 12:
+            return f"{hour}:{minute:02d} AM"
+        elif hour == 12:
+            return f"12:{minute:02d} PM"
+        else:
+            return f"{hour - 12}:{minute:02d} PM"
+
+    def get_12h_time_from_form(self, time_edit, am_btn, pm_btn):
+        """Get 24-hour QTime from 12-hour form inputs"""
+        time_12h = time_edit.time()
+        hour = time_12h.hour()
+        minute = time_12h.minute()
+        
+        # Convert based on AM/PM selection
+        if pm_btn.isChecked():
+            if hour < 12:
+                hour += 12
+            elif hour == 12:
+                hour = 12  # 12 PM stays 12
+        else:  # AM is checked
+            if hour == 12:
+                hour = 0  # 12 AM becomes 0
+        
+        return QTime(hour, minute)
+
+    def set_12h_time_in_form(self, qtime_24h, time_edit, am_btn, pm_btn):
+        """Set 12-hour time in form from 24-hour QTime"""
+        hour_24 = qtime_24h.hour()
+        minute = qtime_24h.minute()
+        
+        if hour_24 == 0:
+            # 12 AM
+            display_hour = 12
+            am_btn.setChecked(True)
+            pm_btn.setChecked(False)
+        elif hour_24 < 12:
+            # 1-11 AM
+            display_hour = hour_24
+            am_btn.setChecked(True)
+            pm_btn.setChecked(False)
+        elif hour_24 == 12:
+            # 12 PM
+            display_hour = 12
+            am_btn.setChecked(False)
+            pm_btn.setChecked(True)
+        else:
+            # 1-11 PM
+            display_hour = hour_24 - 12
+            am_btn.setChecked(False)
+            pm_btn.setChecked(True)
+        
+        display_time = QTime(display_hour, minute)
+        time_edit.setTime(display_time)
+
     # UI SETUP METHODS (Called by main app's create methods)
     def setup_add_event_ui(self):
         """Setup the add event UI components - Called by main app"""
@@ -83,7 +145,7 @@ class AddEventManager:
             traceback.print_exc()
 
     def populate_form_with_data(self, event_data):
-        """Populate form fields with existing event data for editing"""
+        """Populate form fields with existing event data for editing - IMPROVED 12-HOUR HANDLING"""
         try:
             if not event_data or not self.add_event_ui:
                 return
@@ -107,46 +169,57 @@ class AddEventManager:
             
             # Dates
             if 'date' in event_data:
-                # If single date field
                 if isinstance(event_data['date'], QDate):
                     self.add_event_ui.dateStart.setDate(event_data['date'])
                     self.add_event_ui.dateEnd.setDate(event_data['date'])
             else:
-                # Separate start/end dates
                 if 'start_date' in event_data and isinstance(event_data['start_date'], QDate):
                     self.add_event_ui.dateStart.setDate(event_data['start_date'])
                 
                 if 'end_date' in event_data and isinstance(event_data['end_date'], QDate):
                     self.add_event_ui.dateEnd.setDate(event_data['end_date'])
             
-            # Times
-            if 'time' in event_data:
-                # Parse time string if needed
-                time_str = event_data['time']
-                if isinstance(time_str, str):
+            # Times - IMPROVED 12-hour handling
+            if 'start_time' in event_data:
+                start_time = event_data['start_time']
+                if isinstance(start_time, QTime):
+                    self.set_12h_time_in_form(
+                        start_time,
+                        self.add_event_ui.timeStart,
+                        self.add_event_ui.btnStartAM,
+                        self.add_event_ui.btnStartPM
+                    )
+                elif isinstance(start_time, str):
+                    # Parse time string if needed
                     try:
-                        # Handle formats like "9:00 AM", "2:00 PM"
-                        if 'AM' in time_str or 'PM' in time_str:
-                            time_part = time_str.replace('AM', '').replace('PM', '').strip()
+                        if 'AM' in start_time or 'PM' in start_time:
+                            time_part = start_time.replace('AM', '').replace('PM', '').strip()
                             hour, minute = map(int, time_part.split(':'))
                             
-                            if 'PM' in time_str and hour != 12:
+                            if 'PM' in start_time and hour != 12:
                                 hour += 12
-                            elif 'AM' in time_str and hour == 12:
+                            elif 'AM' in start_time and hour == 12:
                                 hour = 0
                             
                             q_time = QTime(hour, minute)
-                            self.add_event_ui.timeStart.setTime(q_time)
-                            
-                            # Set AM/PM buttons
-                            if 'AM' in time_str:
-                                self.add_event_ui.btnStartAM.setChecked(True)
-                                self.add_event_ui.btnStartPM.setChecked(False)
-                            else:
-                                self.add_event_ui.btnStartAM.setChecked(False)
-                                self.add_event_ui.btnStartPM.setChecked(True)
+                            self.set_12h_time_in_form(
+                                q_time,
+                                self.add_event_ui.timeStart,
+                                self.add_event_ui.btnStartAM,
+                                self.add_event_ui.btnStartPM
+                            )
                     except:
                         pass  # Use default time if parsing fails
+            
+            if 'end_time' in event_data:
+                end_time = event_data['end_time']
+                if isinstance(end_time, QTime):
+                    self.set_12h_time_in_form(
+                        end_time,
+                        self.add_event_ui.timeEnd,
+                        self.add_event_ui.btnEndAM,
+                        self.add_event_ui.btnEndPM
+                    )
             
             # Target audience (if available)
             if 'target_audience' in event_data:
@@ -319,7 +392,8 @@ class AddEventManager:
                 # Refresh display
                 self.refresh_displays()
                 
-                print(f"Event created: {title} on {self.event_manager.date_to_string(date)} at {start_time.toString('hh:mm')}")
+                time_str = self.format_time_to_12h(start_time) if start_time else "N/A"
+                print(f"Event created: {title} on {self.event_manager.date_to_string(date)} at {time_str}")
                 return True
             else:
                 # Rollback on save failure
@@ -372,7 +446,8 @@ class AddEventManager:
                     # Refresh display
                     self.refresh_displays()
                     
-                    print(f"Event updated: {original_title} -> {new_title} at {new_start_time.toString('hh:mm')}")
+                    time_str = self.format_time_to_12h(new_start_time) if new_start_time else "N/A"
+                    print(f"Event updated: {original_title} -> {new_title} at {time_str}")
                     return True
                 else:
                     raise Exception("Failed to save changes to JSON file")
@@ -414,7 +489,7 @@ class AddEventManager:
             print(f"Error refreshing displays: {e}")
 
     def get_form_data(self):
-        """Extract data from the form"""
+        """Extract data from the form - IMPROVED 12-HOUR CONVERSION"""
         try:
             # Get basic event data
             title = self.add_event_ui.inputEventTitle.text().strip()
@@ -426,20 +501,18 @@ class AddEventManager:
             start_date = self.add_event_ui.dateStart.date()
             end_date = self.add_event_ui.dateEnd.date()
             
-            # Get times and convert based on AM/PM
-            start_time = self.add_event_ui.timeStart.time()
-            end_time = self.add_event_ui.timeEnd.time()
+            # Get times using the new 12-hour conversion method
+            start_time = self.get_12h_time_from_form(
+                self.add_event_ui.timeStart,
+                self.add_event_ui.btnStartAM,
+                self.add_event_ui.btnStartPM
+            )
             
-            # Adjust for AM/PM
-            if self.add_event_ui.btnStartPM.isChecked() and start_time.hour() < 12:
-                start_time = start_time.addSecs(12 * 3600)  # Add 12 hours for PM
-            elif self.add_event_ui.btnStartAM.isChecked() and start_time.hour() == 12:
-                start_time = start_time.addSecs(-12 * 3600)  # Subtract 12 hours for 12 AM
-            
-            if self.add_event_ui.btnEndPM.isChecked() and end_time.hour() < 12:
-                end_time = end_time.addSecs(12 * 3600)  # Add 12 hours for PM
-            elif self.add_event_ui.btnEndAM.isChecked() and end_time.hour() == 12:
-                end_time = end_time.addSecs(-12 * 3600)  # Subtract 12 hours for 12 AM
+            end_time = self.get_12h_time_from_form(
+                self.add_event_ui.timeEnd,
+                self.add_event_ui.btnEndAM,
+                self.add_event_ui.btnEndPM
+            )
             
             # Get target audience
             target_audience = []
@@ -470,7 +543,7 @@ class AddEventManager:
             return None
 
     def validate_form_data(self, event_data):
-        """Validate the form data"""
+        """Validate the form data - 12-HOUR FORMAT MESSAGES"""
         if not event_data:
             return {'valid': False, 'message': 'Could not read form data.'}
         
@@ -518,7 +591,7 @@ class AddEventManager:
         return {'valid': True, 'message': 'Validation passed.'}
 
     def clear_form(self):
-        """Clear all form fields"""
+        """Clear all form fields - UPDATED 12-HOUR DEFAULTS"""
         try:
             if not self.add_event_ui:
                 return
@@ -529,13 +602,15 @@ class AddEventManager:
             self.add_event_ui.comboEventType.setCurrentIndex(0)
             self.add_event_ui.dateStart.setDate(QDate.currentDate())
             self.add_event_ui.dateEnd.setDate(QDate.currentDate())
-            self.add_event_ui.timeStart.setTime(QTime(9, 0))
-            self.add_event_ui.timeEnd.setTime(QTime(17, 0))
             
-            # Reset AM/PM buttons
-            self.add_event_ui.btnStartAM.setChecked(True)
+            # Set default times in 12-hour format
+            self.add_event_ui.timeStart.setTime(QTime(9, 0))  # 9:00 (will show as 9 AM)
+            self.add_event_ui.timeEnd.setTime(QTime(5, 0))    # 5:00 (will show as 5 PM)
+            
+            # Set correct AM/PM buttons for defaults
+            self.add_event_ui.btnStartAM.setChecked(True)   # 9 AM
             self.add_event_ui.btnStartPM.setChecked(False)
-            self.add_event_ui.btnEndAM.setChecked(False)
+            self.add_event_ui.btnEndAM.setChecked(False)    # 5 PM
             self.add_event_ui.btnEndPM.setChecked(True)
             
             # Reset checkboxes
